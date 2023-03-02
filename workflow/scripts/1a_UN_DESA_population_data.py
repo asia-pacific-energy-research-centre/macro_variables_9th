@@ -70,6 +70,9 @@ undesa_apec.replace(dict_to_replace, inplace = True)
 APEC = [dict_to_replace.get(e, e) for e in APEC]
 APEC
 
+# UNDESA APEC dataframe
+undesa_apec.to_csv
+
 # Colour palette for charts (15 categories) 
 palette = sns.color_palette('rocket', 15)
 
