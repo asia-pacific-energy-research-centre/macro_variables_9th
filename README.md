@@ -38,7 +38,7 @@ $ conda activate ./env
 Note that the `env` directory is *not* under version control as it can always be re-created from 
 the `environment.yml` file as necessary.
 
-### Update from finn
+### Update from finn (uses a different env file)
 You can also use the macro_variables_env environment that finn has created for his use. 
 
 Change the names from 
