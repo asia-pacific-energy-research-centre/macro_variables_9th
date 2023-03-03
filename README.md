@@ -41,12 +41,12 @@ the `environment.yml` file as necessary.
 ### Update from finn (uses a different env file)
 You can also use the macro_variables_env environment that finn has created for his use. 
 
-Change the names from 
+Change the environment folder and environment.yml file in the steps above from:  
 ```bash
 ./env and ./workflow/envs/environment.yml 
 ```
 
-to 
+to:
 ```bash
 ./macro_variables_env and ./workflow/envs/macro_variables_env.yml
 ```
