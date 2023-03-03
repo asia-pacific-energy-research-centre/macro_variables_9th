@@ -47,7 +47,7 @@ If you add (remove) dependencies to (from) the `environment.yml` file after the 
 already been created, then you can update the environment with the following command.
 
 ```bash
-$ conda env update --prefix ./env --file ./workflow/environment.yml --prune
+$ conda env update --prefix ./env --file ./workflow/envs/environment.yml --prune
 ```
 
 ### Listing the full contents of the Conda environment
