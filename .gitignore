@@ -10,14 +10,8 @@
 .vscode/settings.json
 env/
 macro_variables_env/
-plotting_output/
-#dont ignore files in the data/input folder as they are annoying to redownlodd
-!data/input/*
-!output/*
-
 
 #######################################################
-
 
 
 # User-specific files
