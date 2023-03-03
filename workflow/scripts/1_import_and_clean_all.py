@@ -27,7 +27,7 @@ GDP_forecast_OECD = pd.read_csv(f'{macro_data_folder}/OECD/GDPLTFORECAST.csv')
 real_gdp_growth_short_term_forecast = pd.read_csv(f'{macro_data_folder}/OECD/real_gdp_growth_short_term_forecast.csv')
 nominal_gdp_growth_short_term_forecast = pd.read_csv(f'{macro_data_folder}/OECD/nominal_gdp_growth_short_term_forecast.csv')
 #UN data
-POP_UN = pd.read_csv(f'{macro_data_folder}/UN/WPP2022_TotalPopulationBySex.csv')
+POP_UN = pd.read_csv(f'{macro_data_folder}/UN_DESA/WPP2022_TotalPopulationBySex.csv')
 # World Bank data
 dec_conversion_rate = pd.read_csv(f'{macro_data_folder}/WORLD_BANK/dec_alternative_LCU_to_USD_conversion_factor.csv')
 exchange_rate = pd.read_csv(f'{macro_data_folder}/WORLD_BANK/LCU_to_USD_exchange_rate.csv')
