@@ -38,9 +38,19 @@ $ conda activate ./env
 Note that the `env` directory is *not* under version control as it can always be re-created from 
 the `environment.yml` file as necessary.
 
-## Update from finn
-You can also use the macro_variables_env environment that finn has created for his use. Just change the names from ./env and ./workflow/environment.yml to ./macro_variables_env and ./workflow/macro_variables_env.yml
-He uses a different name because it works better for him.
+### Update from finn (uses a different env file)
+You can also use the macro_variables_env environment that finn has created for his use. 
+
+Change the environment folder and environment.yml file in the steps above from:  
+```bash
+./env and ./workflow/envs/environment.yml 
+```
+
+to:
+```bash
+./macro_variables_env and ./workflow/envs/macro_variables_env.yml
+```
+
 ### Updating the Conda environment
 
 If you add (remove) dependencies to (from) the `environment.yml` file after the environment has 
