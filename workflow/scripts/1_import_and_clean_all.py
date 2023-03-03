@@ -280,7 +280,7 @@ all_data['Value'] = pd.to_numeric(all_data['Value'], errors='coerce')
 
 # %%
 #save to csv
-all_data.to_csv('../../data/all_macro_data_{}.csv'.format(FILE_DATE_ID), index = False)
+all_data.to_csv('../../data/output/all_macro_data_{}.csv'.format(FILE_DATE_ID), index = False)
 
 #%%
 

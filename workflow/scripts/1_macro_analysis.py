@@ -14,7 +14,7 @@ FILE_DATE_ID = 'DATE{}'.format(file_date)
 
 #load macro data
 # FILE_DATE_ID = 'DATE20230301'
-all_data = pd.read_csv('../../data/all_macro_data_{}.csv'.format(FILE_DATE_ID))
+all_data = pd.read_csv('../../data/output/all_macro_data_{}.csv'.format(FILE_DATE_ID))
 
 AUTO_OPEN_PLOTLY_GRAPHS = False
 plot = True
