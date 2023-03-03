@@ -26,7 +26,7 @@ After adding any necessary dependencies to the Conda `environment.yml` file you 
 environment in a sub-directory of your project directory by running the following command.
 
 ```bash
-$ conda env create --prefix ./env --file ./workflow/environment.yml
+$ conda env create --prefix ./env --file ./workflow/envs/environment.yml
 ```
 Once the new environment has been created you can activate the environment with the following 
 command.
@@ -38,13 +38,16 @@ $ conda activate ./env
 Note that the `env` directory is *not* under version control as it can always be re-created from 
 the `environment.yml` file as necessary.
 
+## Update from finn
+You can also use the macro_variables_env environment that finn has created for his use. Just change the names from ./env and ./workflow/environment.yml to ./macro_variables_env and ./workflow/macro_variables_env.yml
+He uses a different name because it works better for him.
 ### Updating the Conda environment
 
 If you add (remove) dependencies to (from) the `environment.yml` file after the environment has 
 already been created, then you can update the environment with the following command.
 
 ```bash
-$ conda env update --prefix ./env --file ./workflow/environment.yml --prune
+$ conda env update --prefix ./env --file ./workflow/envs/environment.yml --prune
 ```
 
 ### Listing the full contents of the Conda environment
