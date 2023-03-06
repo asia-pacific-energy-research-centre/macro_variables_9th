@@ -114,4 +114,35 @@ for economy in APEC:
     fig.savefig(population_charts + economy + '_population.png')
     plt.close()
 
+# Save required dataframe
+
+pop_choice = pd.read_csv(population_charts + 'APEC_population.csv', header = None, index_col = 0)\
+    .squeeze().to_dict()
+
+APEC_econcode = pd.read_csv('../../data/APEC_economy_code.csv', header = None, index_col = 0)\
+    .squeeze().to_dict()
+
+historical_df = undesa_apec[undesa_apec['Time'] < 2022]
+historical_df
+
+projected_df = pd.DataFrame(columns = ['Economy', 'Location', 'Variant', 'Time', 'TPopulation1Jan', 'TPopulation1July', 'NetMigrations'])
+projected_df
+
+for economy in APEC:
+    temp_df = undesa_apec[(undesa_apec['Location'] == economy) & 
+                          (undesa_apec['Time'] > 2021) & 
+                          (undesa_apec['Variant'] == pop_choice[economy])]\
+                            .copy().reset_index(drop = True)
+    
+    temp_df['Economy'] = APEC_econcode[economy]
+    
+    projected_df = pd.concat([projected_df, temp_df]).reset_index(drop = True)
+
+APEC_population = pd.concat([projected_df, historical_df]).copy().reset_index(drop = True)
+
+APEC_population['Economy'] = APEC_population['Location'].map(APEC_econcode)
+
+APEC_population = APEC_population.sort_values(['Economy', 'Time']).copy().reset_index(drop = True)
+APEC_population.to_csv(population_charts + 'APEC_population_to_2100.csv', index = False)
+
     
