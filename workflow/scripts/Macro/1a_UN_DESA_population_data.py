@@ -1,5 +1,18 @@
 # UN DESA
 
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
+import re
+
+# Change the working drive
+wanted_wd = 'macro_variables_9th'
+os.chdir(re.split(wanted_wd, os.getcwd())[0] + wanted_wd)
+
+# Define categories for data grab
+
 APEC = ['Australia',
         'Brunei Darussalam',
         'Canada',
@@ -40,14 +53,14 @@ variant = ['High',
            'Lower 95 PI']
 
 # Grab histroical data and medium scenario
-undesa_hist = pd.read_csv("../../data/UN_DESA/WPP2022_Demographic_Indicators_Medium.csv")
+undesa_hist = pd.read_csv("./data/UN_DESA/WPP2022_Demographic_Indicators_Medium.csv")
 undesa_hist = undesa_hist[undesa_hist['Location'].isin(APEC)].copy().reset_index(drop = True)
 
 # Only keep variables of interest
 undesa_hist = undesa_hist[['Location', 'Variant', 'Time', 'TPopulation1Jan', 'TPopulation1July', 'NetMigrations']].copy()
 
 # Projections to 2100 from UN DESA csv
-undesa_proj = pd.read_csv("../../data/UN_DESA/WPP2022_Demographic_Indicators_OtherVariants.csv")
+undesa_proj = pd.read_csv("./data/UN_DESA/WPP2022_Demographic_Indicators_OtherVariants.csv")
 
 # Subset so only APEC economies
 undesa_proj = undesa_proj[undesa_proj['Location'].isin(APEC)].copy().reset_index(drop = True)
@@ -70,14 +83,11 @@ undesa_apec.replace(dict_to_replace, inplace = True)
 APEC = [dict_to_replace.get(e, e) for e in APEC]
 APEC
 
-# UNDESA APEC dataframe
-undesa_apec.to_csv
-
 # Colour palette for charts (15 categories) 
 palette = sns.color_palette('rocket', 15)
 
 # Save location for charts
-population_charts = '../../results/population/'
+population_charts = './results/population/'
 
 if not os.path.isdir(population_charts):
     os.makedirs(population_charts)
@@ -119,7 +129,7 @@ for economy in APEC:
 pop_choice = pd.read_csv(population_charts + 'APEC_population.csv', header = None, index_col = 0)\
     .squeeze().to_dict()
 
-APEC_econcode = pd.read_csv('../../data/APEC_economy_code.csv', header = None, index_col = 0)\
+APEC_econcode = pd.read_csv('./data/APEC_economy_code.csv', header = None, index_col = 0)\
     .squeeze().to_dict()
 
 historical_df = undesa_apec[undesa_apec['Time'] < 2022]
@@ -145,4 +155,25 @@ APEC_population['Economy'] = APEC_population['Location'].map(APEC_econcode)
 APEC_population = APEC_population.sort_values(['Economy', 'Time']).copy().reset_index(drop = True)
 APEC_population.to_csv(population_charts + 'APEC_population_to_2100.csv', index = False)
 
-    
+# Save population data
+
+APEC_population = APEC_population.rename(columns = {'Economy': 'economy_code',
+                                                    'Location': 'economy',
+                                                    'Variant': 'variant',
+                                                    'Time': 'year',
+                                                    'TPopulation1Jan': 'population_1jan',
+                                                    'TPopulation1July': 'population_1jul',
+                                                    'NetMigrations': 'net_migration'})
+
+APEC_population = APEC_population.melt(id_vars = ['economy', 'economy_code', 'year', 'variant'],
+                                       value_vars = ['population_1jan', 'population_1jul', 'net_migration'])\
+                                        .reset_index(drop = True)
+
+APEC_population = APEC_population[['economy_code', 'economy', 'year', 'variant', 'variable', 'value']]
+
+# Now add percent change column
+APEC_population['percent'] = APEC_population.groupby(['economy', 'variable'], 
+                                                 group_keys = False)\
+                                                    ['value'].apply(pd.Series.pct_change)
+
+APEC_population.to_csv('./data/UN_DESA/undesa_pop_to2100.csv')

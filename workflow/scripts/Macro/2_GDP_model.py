@@ -1,4 +1,4 @@
-# Initial play around with the solowpy model that was built eby David Pugh
+# Initial play around with the solowpy model that was built by David Pugh
 
 import numpy as np
 import pandas as pd
@@ -120,7 +120,6 @@ def sgm_bgp_100yr_run(L0, E0, K0, n = 0.01, g = 0.02, s = 0.15, alpha = 0.5, del
     print(delta, "is the depreciation rate")
     print(s, "is the savings rate")
     print(alpha, "is the decreasing-returns-to-scale parameter")
-    print(sg_df.head(5))
 
     return sg_df
 
