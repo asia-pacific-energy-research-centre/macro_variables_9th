@@ -1,5 +1,12 @@
 # Building combined data frame to generate capital, labour, depreciation, savings, etc to 2027
-# Run a, b, and c script before this one.
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
+import re
+import openpyxl
 
 # Change the working drive
 wanted_wd = 'macro_variables_9th'
@@ -11,7 +18,6 @@ APEC_econcode = pd.read_csv('./data/APEC_economy_code.csv', header = None, index
 UN_df_long = pd.read_csv('./data/UN_DESA/undesa_pop_to2100.csv')
 IMF_df_long = pd.read_csv('./data/IMF/IMF_to2027.csv')
 PWT_df_long = pd.read_csv('./data/PWT/PWT_cap_labour_to2019.csv')
-
 
 # Use output to capital stock from PWT_df to generate capital variable in IMF data 
 
@@ -44,6 +50,56 @@ for economy in APEC_econcode.values():
                                                         ['value'].apply(pd.Series.pct_change)
     
     capital_df = pd.concat([capital_df, capital_stock], axis = 0).reset_index(drop = True)
+
+# Chart capital
+
+# Save location for charts
+capital = './results/capital/'
+
+if not os.path.isdir(capital):
+    os.makedirs(capital)
+
+for economy in APEC_econcode.values():
+    chart_df = capital_df[capital_df['economy_code'] == economy].copy().reset_index(drop = True)
+    
+    if chart_df['value'].isna().sum() == len(chart_df['value']):
+        pass
+
+    else:
+
+        fig, axs = plt.subplots(2, 1)
+
+        sns.set_theme(style = 'ticks')
+
+        # Capital stock
+        sns.lineplot(ax = axs[0],
+                    data = chart_df,
+                    x = 'year',
+                    y = 'value')
+        
+        axs[0].set(title = economy + ' capital stock', 
+                    xlabel = 'Year', 
+                    ylabel = 'Capital stock')
+        
+        # Capital stock growth
+        sns.lineplot(ax = axs[1],
+                    data = chart_df,
+                    x = 'year',
+                    y = 'percent')
+        
+        axs[1].set(title = economy + ' capital stock growth', 
+                    xlabel = 'Year', 
+                    ylabel = 'Capital stock growth')
+        
+        plt.tight_layout()
+        fig.savefig(capital + economy + '_capital.png')
+        plt.close()
+
+
+# Save capital df
+capital_df.to_csv('./data/capital_stock.csv', index = False)
+
+#############################################################################################
 
 # Estimating efficiency of Labour, E
 
@@ -90,26 +146,53 @@ for economy in APEC_econcode.values():
 
     E_estimate = pd.concat([E_estimate, eqn_df]).reset_index(drop = True)
 
-E_estimate
+# E_estimate charts
 
+# Save location for charts
+lab_eff = './results/labour_efficiency/'
 
+if not os.path.isdir(lab_eff):
+    os.makedirs(lab_eff)
 
-E_calc_df
+for economy in APEC_econcode.values():
+    chart_df = E_estimate[E_estimate['economy_code'] == economy].copy().reset_index(drop = True)
+    
+    if chart_df['E'].isna().sum() > 0:
+        pass
 
-UN_df_long
-IMF_df_long.variable.unique()
-PWT_df_long.variable.unique()
+    else:
 
-IMF_data_long.variable.unique()
+        fig, ax = plt.subplots()
 
+        sns.set_theme(style = 'ticks')
 
+        # Population
+        sns.lineplot(ax = ax,
+                    data = chart_df,
+                    x = 'year',
+                    y = 'E')
+        
+        ax.set(title = economy + ' labour efficiency estimate', 
+                    xlabel = 'Year', 
+                    ylabel = 'Labour efficiency')
+        
+        plt.tight_layout()
+        fig.savefig(lab_eff + economy + '_labour_efficiency.png')
+        plt.close()
 
-IMF_data_long.variable.unique()
+# Save E estimate data frame
 
-# Projecting K PWT from 2019 to 2027
+E_df = E_estimate.copy()
 
-# Requirements:
-# Y = f(K, L)
-# K[i + 1] = K[i] - (K[i] * delta) + (Y[i] * s)
-# Y[i] = K[i]^0.4 * L[i] * 0.6 * E 
+E_df['variable'] = 'Labour efficiency'
 
+E_df = E_df[['economy_code', 'economy', 'year', 'variable', 'E']]\
+    .rename(columns = {'E': 'value'}).reset_index(drop = True)
+
+E_df['percent'] = E_df.groupby(['economy', 'variable'], 
+                               group_keys = False)\
+                                ['value'].apply(pd.Series.pct_change)
+
+E_df['source'] = 'Derived'
+
+E_df.to_csv('./data/labour_efficiency_estimate_to2027.csv', index = False)

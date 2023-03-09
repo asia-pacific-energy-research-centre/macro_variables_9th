@@ -1,4 +1,4 @@
-# Initial play around with the solowpy model that was built by David Pugh
+# Initial play around with the solowpy model that was built by David Pugh 
 
 import numpy as np
 import pandas as pd

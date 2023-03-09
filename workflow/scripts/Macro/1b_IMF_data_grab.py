@@ -75,15 +75,42 @@ for economy in APEC:
     ppp_df['Country'] = economy
     ppp_df['Subject Descriptor'] = 'Real GDP PPP 2017 USD'
 
-    PPP_GDP = PPP_GDP.append([ppp_df]).reset_index(drop = True)
+    PPP_GDP = pd.concat([PPP_GDP, pd.DataFrame(ppp_df).transpose()], axis = 0).reset_index(drop = True)
     
 PPP_GDP_long = PPP_GDP.melt(id_vars = ['Country', 'Subject Descriptor'], 
                             value_vars = list(range(1980, 2028, 1)), 
                             var_name = 'Year')
 
-PPP_GDP_long['percent change'] = PPP_GDP_long.groupby(['Country'], 
-                                                      group_keys = False)\
-                                                        ['value']\
-                                                            .apply(pd.Series.pct_change)
+# Now reshape population, investment and gross national savings
 
-PPP_GDP_long[PPP_GDP_long['Year'] == 2020]
+IMF_data_long = IMF_df.melt(id_vars = ['Country', 'Subject Descriptor'],
+                            value_vars = list(range(1980, 2028, 1)),
+                            var_name = 'Year')
+
+# Concat the real GDP with original IMF data to create new long data frame
+IMF_data_long = pd.concat([IMF_data_long, PPP_GDP_long]).reset_index(drop = True)
+
+# Now add percent change column
+IMF_data_long['percent'] = IMF_data_long.groupby(['Country', 'Subject Descriptor'], 
+                                                 group_keys = False)\
+                                                    ['value'].apply(pd.Series.pct_change)
+
+IMF_data_long = IMF_data_long.rename(columns = {'Country': 'economy',
+                                                'Subject Descriptor': 'variable',
+                                                'Year': 'year'})
+
+# Add in economy code
+
+APEC_econcode = pd.read_csv('./data/APEC_economy_code.csv', header = None, index_col = 0)\
+    .squeeze().to_dict()
+
+IMF_data_long['economy_code'] = IMF_data_long['economy'].map(APEC_econcode)
+
+IMF_data_long = IMF_data_long[['economy_code', 'economy', 'variable', 'year', 'value', 'percent']]
+
+IMF_data_long = IMF_data_long.sort_values(['economy_code', 'variable', 'year']).copy().reset_index(drop = True)
+
+IMF_data_long['source'] = 'IMF'
+
+# Save csv
+IMF_data_long.to_csv('./data/IMF/IMF_to2027.csv', index = False)

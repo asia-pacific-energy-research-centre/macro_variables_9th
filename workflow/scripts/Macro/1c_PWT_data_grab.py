@@ -66,8 +66,6 @@ APEC
 
 PWT_df['output_to_kstock'] = PWT_df['rgdpna'] / PWT_df['rnna']
 
-PWT_df.to_csv('./data/PWT/PWT_cap_labour_to2019.csv')
-
 # Colour palette for charts (15 categories) 
 palette = sns.color_palette('rocket', 15)
 
@@ -174,12 +172,6 @@ PWT_df['percent'] = PWT_df.groupby(['economy', 'variable'],
 
 PWT_df = PWT_df.sort_values(['economy_code', 'year']).copy().reset_index(drop = True)
 
-PWT_df['economy_code'].unique()
+PWT_df['source'] = 'PWT'
 
-
-
-
-    
-
-
-
+PWT_df.to_csv('./data/PWT/PWT_cap_labour_to2019.csv', index = False)
