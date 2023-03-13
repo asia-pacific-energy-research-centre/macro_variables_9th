@@ -112,5 +112,104 @@ IMF_data_long = IMF_data_long.sort_values(['economy_code', 'variable', 'year']).
 
 IMF_data_long['source'] = 'IMF'
 
+IMF_data_long['variable'].unique()
+
+# Create some IMF charts
+# Save location for charts
+IMF_charts = './results/IMF_data/'
+
+if not os.path.isdir(IMF_charts):
+    os.makedirs(IMF_charts)
+
+for economy in APEC_econcode.values():
+    chart_df = IMF_data_long[IMF_data_long['economy_code'] == economy].copy().reset_index(drop = True)
+
+    fig, axs = plt.subplots(2, 2)
+
+    sns.set_theme(style = 'ticks')
+
+    # Output
+    if chart_df[chart_df['variable'] == 'Real GDP PPP 2017 USD']['value'].isna().sum()\
+        == len(chart_df[chart_df['variable'] == 'Real GDP PPP 2017 USD']['value']):
+        pass
+
+    else:
+        sns.lineplot(ax = axs[0, 0],
+                    data = chart_df[chart_df['variable'] == 'Real GDP PPP 2017 USD'],
+                    x = 'year',
+                    y = 'value')
+        
+        axs[0, 0].set(title = economy + ' real GDP ', 
+                    xlabel = 'Year', 
+                    ylabel = 'Real GDP PPP 2017 USD')
+    
+    # GDP per capita
+    if chart_df[chart_df['variable'] == 'Gross domestic product per capita, constant prices']['value'].isna().sum()\
+        == len(chart_df[chart_df['variable'] == 'Gross domestic product per capita, constant prices']['value']):
+        pass
+    
+    else:
+        sns.lineplot(ax = axs[0, 1],
+                    data = chart_df[chart_df['variable'] == 'Gross domestic product per capita, constant prices'],
+                    x = 'year',
+                    y = 'value')
+        
+        axs[0, 1].set(title = economy + ' real GDP per capita', 
+                    xlabel = 'Year', 
+                    ylabel = 'Real GDP per capita')
+    
+    # Savings
+    if chart_df[chart_df['variable'] == 'Gross national savings']['value'].isna().sum()\
+        == len(chart_df[chart_df['variable'] == 'Gross national savings']['value']):
+        pass
+
+    else:
+        sns.lineplot(ax = axs[1, 0],
+                    data = chart_df[chart_df['variable'] == 'Gross national savings'],
+                    x = 'year',
+                    y = 'value')
+        
+        axs[1, 0].set(title = economy + ' gross national savings', 
+                    xlabel = 'Year', 
+                    ylabel = 'Gross national savings')
+    
+    # Total investment
+    if chart_df[chart_df['variable'] == 'Total investment']['value'].isna().sum()\
+        == len(chart_df[chart_df['variable'] == 'Total investment']['value']):
+        pass
+    
+    else:
+        sns.lineplot(ax = axs[1, 1],
+                    data = chart_df[chart_df['variable'] == 'Total investment'],
+                    x = 'year',
+                    y = 'value')
+        
+        axs[1, 1].set(title = economy + ' total investment', 
+                    xlabel = 'Year', 
+                    ylabel = 'total investment')
+
+
+    plt.tight_layout()
+    fig.savefig(IMF_charts + economy + '_IMF_data.png')
+    plt.close()
+
 # Save csv
 IMF_data_long.to_csv('./data/IMF/IMF_to2027.csv', index = False)
+
+IMF_savings = IMF_data_long[(IMF_data_long['variable'] == 'Gross national savings') &
+                            (IMF_data_long['year'] == 2027)].copy()\
+                            [['economy_code', 'variable', 'year', 'value', 'source']]\
+                                .reset_index(drop = True)
+
+brunei_inv = IMF_data_long[(IMF_data_long['variable'] == 'Total investment') &
+                            (IMF_data_long['year'] == 2027) &
+                            (IMF_data_long['economy_code'] == '02_BD')].copy()\
+                            [['economy_code', 'variable', 'year', 'value', 'source']]\
+                                .reset_index(drop = True)
+
+IMF_savings = pd.concat([IMF_savings[IMF_savings['economy_code'] != '02_BD'], 
+                         brunei_inv]).sort_values(['economy_code']).reset_index(drop = True)
+
+IMF_savings.to_csv('./data/IMF_savings_2027.csv', index = False)
+
+

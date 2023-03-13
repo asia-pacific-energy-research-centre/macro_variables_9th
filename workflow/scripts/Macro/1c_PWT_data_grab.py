@@ -175,3 +175,9 @@ PWT_df = PWT_df.sort_values(['economy_code', 'year']).copy().reset_index(drop = 
 PWT_df['source'] = 'PWT'
 
 PWT_df.to_csv('./data/PWT/PWT_cap_labour_to2019.csv', index = False)
+
+PWT_delta = PWT_df[(PWT_df['variable'] == 'delta') &
+                   (PWT_df['year'] == 2019)].copy()\
+                    [['economy_code', 'year', 'variable', 'value', 'source']].reset_index(drop = True)
+
+PWT_delta.to_csv('./data/PWT_delta_2019.csv', index = False)
