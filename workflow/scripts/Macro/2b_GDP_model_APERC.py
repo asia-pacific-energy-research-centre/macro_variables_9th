@@ -118,7 +118,7 @@ for economy in APEC_econcode.values():
 
     # Update labour efficiency
     for year in range(2028, 2101, 1):
-        if eff_df.iloc[-lab_eff_periods:].sum()[0] / lab_eff_periods > 0.013:
+        if eff_df.iloc[-lab_eff_periods:].sum()[0] / lab_eff_periods > 0.0175:
             eff_df.loc[year, 'percent'] = eff_df.iloc[-lab_eff_periods:].sum()[0] / lab_eff_periods - 0.0015
 
         elif eff_df.iloc[-lab_eff_periods:].sum()[0] / lab_eff_periods < 0.0125:
@@ -225,11 +225,21 @@ for economy in APEC_econcode.values():
 
 GDP_estimates = GDP_df3.reset_index()
 
+GDP_estimates['real_output_IMF'] = np.where(GDP_estimates['year'] > 2027, np.nan, 
+                                                   np.where(GDP_estimates['year'] <= 2027, 
+                                                            GDP_estimates['real_output'], np.nan))
+
+GDP_estimates['real_output_projection'] = np.where(GDP_estimates['year'] <= 2027, np.nan, 
+                                                   np.where(GDP_estimates['year'] > 2027, 
+                                                            GDP_estimates['real_output'], np.nan))
+
 # Now add GDP estimates from 8th
 
 GDP_estimates = GDP_estimates.merge(GDP_8th, on = ['economy_code', 'year'], how = 'left')\
-    [['year', 'economy_code', 'economy', 'labour', 'efficiency', 'capital', 'real_output', 'value']]\
+    [['year', 'economy_code', 'economy', 'labour', 'efficiency', 'capital', 'real_output_IMF', 'real_output_projection', 'value']]\
         .rename(columns = {'value': 'real_output_8th'})
+
+GDP_estimates_long = GDP_estimates.melt(id_vars = ['economy_code', 'economy', 'year'])
 
 # Save location for charts
 GDP_est = './results/GDP_estimates/'
@@ -237,38 +247,108 @@ GDP_est = './results/GDP_estimates/'
 if not os.path.isdir(GDP_est):
     os.makedirs(GDP_est)
 
+GDP_estimates_long['variable'] = GDP_estimates_long['variable'].map({'real_output_IMF': 'IMF GDP projections to 2027',
+                                                                     'real_output_projection': 'APERC real GDP projections',
+                                                                     'real_output_8th': '8th Outlook projections'})
+
 # GDP charts
 for economy in APEC_econcode.values():
-    chart_df = GDP_estimates[GDP_estimates['economy_code'] == economy]\
-        .copy().reset_index(drop = True)
+    chart_df = GDP_estimates_long[(GDP_estimates_long['economy_code'] == economy) &
+                                  (GDP_estimates_long['variable'].isin(['IMF GDP projections to 2027',
+                                                                        'APERC real GDP projections']))]\
+                                    .copy().reset_index(drop = True)
+    
+    chart_df_8th = GDP_estimates_long[(GDP_estimates_long['economy_code'] == economy) &
+                                      (GDP_estimates_long['variable'].isin(['8th Outlook projections']))]\
+                                        .copy().reset_index(drop = True)
 
     fig, ax = plt.subplots()
 
     sns.set_theme(style = 'ticks')
 
-    # real GDP
+    # real GDP IMF
     sns.lineplot(ax = ax,
                  data = chart_df,
                  x = 'year',
-                 y = 'real_output',
-                 label = 'Real GDP (2017 USD PPP)')
+                 y = 'value',
+                 hue = 'variable',
+                 palette = sns.color_palette('Paired', 2))
     
-    # 8th Outlook GDP
+    # real GDP IMF
     sns.lineplot(ax = ax,
-                 data = chart_df,
+                 data = chart_df_8th,
                  x = 'year',
-                 y = 'real_output_8th',
-                 label = '8th Outlook real GDP (2018 USD PPP)')
-      
-    ax.set(title = economy + ' real GDP (PPP 2017 USD)', 
-           xlabel = 'Year', 
-           ylabel = 'Real output (millions)',
-           xlim = (1980, 2070))
+                 y = 'value',
+                 hue = 'variable')
+    
+    ax.lines[1].set_linestyle('--')
     
     plt.legend(title = '', 
                fontsize = 8)
+    
+    ax.set(title = economy + ' real GDP (2017 USD PPP)', 
+           xlabel = 'Year', 
+           ylabel = 'Real output (millions)',
+           xlim = (1980, 2070))
     
     plt.tight_layout()
     fig.savefig(GDP_est + economy + '_GDP_estimates.png')
     plt.close()
 
+
+
+
+# # GDP charts
+# for economy in APEC_econcode.values():
+#     chart_df = GDP_estimates[GDP_estimates['economy_code'] == economy]\
+#         .copy().reset_index(drop = True)
+
+#     fig, ax = plt.subplots()
+
+#     sns.set_theme(style = 'ticks')
+
+#     if chart_df['real_output_IMF'].isna().sum() == len(chart_df['real_output_IMF']):
+#         pass
+
+#     else:
+#         # real GDP IMF
+#         sns.lineplot(ax = ax,
+#                     data = chart_df,
+#                     x = 'year',
+#                     y = 'real_output_IMF',
+#                     label = 'Real GDP IMF (2017 USD PPP)',
+#                     palette = palette)
+    
+#     if chart_df['real_output_projection'].isna().sum() == len(chart_df['real_output_projection']):
+#         pass
+    
+#     else:    
+#         # real GDP IMF
+#         sns.lineplot(ax = ax,
+#                     data = chart_df,
+#                     x = 'year',
+#                     y = 'real_output_projection',
+#                     label = 'Real GDP projection (2017 USD PPP)',
+#                     palette = palette)
+    
+#     # 8th Outlook GDP
+#     sns.lineplot(ax = ax,
+#                  data = chart_df,
+#                  x = 'year',
+#                  y = 'real_output_8th',
+#                  label = '8th Outlook real GDP (2018 USD PPP)',
+#                  palette = palette)
+      
+#     ax.set(title = economy + ' real GDP (PPP 2017 USD)', 
+#            xlabel = 'Year', 
+#            ylabel = 'Real output (millions)',
+#            xlim = (1980, 2070))
+    
+#     ax.lines[1].set_linestyle('--')
+    
+#     plt.legend(title = '', 
+#                fontsize = 8)
+    
+#     plt.tight_layout()
+#     fig.savefig(GDP_est + economy + '_GDP_estimates.png')
+#     plt.close()
