@@ -1,8 +1,22 @@
 # Macro variables for the 9th Outlook
-Uses git repository template for APERC models.
+Uses git repository template for APERC models. This repository holds many of the input assumptions/data that will be used for the forthcoming 9th APEC Energy Demand and Supply Outlook.
 
-## How to use this template
-Create a new repository. When given the option, select 'aperc-template' as the template.
+## GDP projections out to 2100
+One of the main components of this repository is GDP projections for APEC economies.
+
+The starting point is IMF GDP projections for APEC economies out to 2027. This is then built on out to 2100.
+
+The model used is a Solow Swan constant elasticity of substitution Cobb Douglas production model, with labour and capital inputs, and derived efficiency of labour. 
+
+Inputs to the model include:
+
+- Population estimates to 2100 (provided by UN DESA)
+- Capital stock (Penn World Tables)
+- Depreciation (Penn World Tables)
+- National savings rate (IMF)
+- Labour efficiency (derived for historical years or where data is available)
+
+Capital stock, depreciation, national savings, and labour efficiency are assumed to change through the projection period, based on qualitative assessment.
 
 ## Project organization
 
