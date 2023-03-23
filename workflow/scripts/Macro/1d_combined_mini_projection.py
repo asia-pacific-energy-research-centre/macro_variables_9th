@@ -17,7 +17,7 @@ APEC_econcode = pd.read_csv('./data/APEC_economy_code.csv', header = None, index
 
 UN_df_long = pd.read_csv('./data/UN_DESA/undesa_pop_to2100.csv')
 IMF_df_long = pd.read_csv('./data/IMF/IMF_to2027.csv')
-PWT_df_long = pd.read_csv('./data/PWT/PWT_cap_labour_to2019.csv')
+PWT_df_long = pd.read_csv('./data/PWT/PWT_cap_labour_to2019.csv') 
 
 # Use output to capital stock from PWT_df to generate capital variable in IMF data 
 

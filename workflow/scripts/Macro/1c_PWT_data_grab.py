@@ -66,6 +66,20 @@ APEC
 
 PWT_df['output_to_kstock'] = PWT_df['rgdpna'] / PWT_df['rnna']
 
+######################################################################################
+# Add in PNG data
+
+PNG_data = PWT_df[PWT_df['economy'] == 'Australia']\
+    [['economy', 'year', 'delta', 'output_to_kstock']].copy().reset_index(drop = True)
+
+PNG_data['economy'] = 'Papua New Guinea'
+PNG_data['delta'] = 0.06
+PNG_data['output_to_kstock'] = 0.5
+
+PWT_df = pd.concat([PWT_df, PNG_data]).reset_index(drop = True)
+
+########################################################################################
+
 # Colour palette for charts (15 categories) 
 palette = sns.color_palette('rocket', 15)
 
@@ -76,7 +90,10 @@ if not os.path.isdir(cap_labour_charts):
     os.makedirs(cap_labour_charts)
 
 for economy in APEC:
-    chart_df = PWT_df[PWT_df['economy'] == economy].copy().reset_index(drop = True)
+    if economy != 'Papua New Guinea':
+        chart_df = PWT_df[PWT_df['economy'] == economy].copy().reset_index(drop = True)
+    else:
+        chart_df = PWT_df[PWT_df['economy'] == 'something'].copy().reset_index(drop = True)
 
     fig, axs = plt.subplots(2, 2)
 
@@ -129,7 +146,6 @@ for economy in APEC:
 
 for economy in APEC:
     chart_df = PWT_df[PWT_df['economy'] == economy].copy().reset_index(drop = True)
-    chart_df['output_to_cap'] = chart_df['rgdpna'] / chart_df['rnna']
 
     fig, ax = plt.subplots()
 
@@ -139,7 +155,7 @@ for economy in APEC:
     sns.lineplot(ax = ax,
                  data = chart_df,
                  x = 'year',
-                 y = 'output_to_cap')
+                 y = 'output_to_kstock')
       
     ax.set(title = economy + ' PWT output to capital stock', 
                   xlabel = 'Year', 
@@ -148,7 +164,6 @@ for economy in APEC:
     plt.tight_layout()
     fig.savefig(cap_labour_charts + economy + '_output_cap.png')
     plt.close()
-
 
 # Create long dataframe
 # Add in economy code

@@ -53,16 +53,16 @@ GDP_8th['value'] = GDP_8th['value'] / (10**6)
 
 GDP_8th['source'] = '8th Outlook'
 
-# Specify some parameters needed for the model
+# Specify some parameters needed for the cobb douglas model
 
 ALPHA = 0.4
 
-# For the model
+# For the model: Y[i+1] = K[i+1]**alpha * (L[i+1] * E[i+1])**(1-alpha))
 
 # L is given from UN_DESA
-# E (derived), grow at constant rate?
+# E (derived for historical 1980 to project 2027 from IMF), grown via a function defined below out to 2100
 # K[i+1] = K[i] - K[i] * delta + (Y[i] * s)
-# Y[i+1] = K[i+1]**alpha * (L[i+1] * E[i+1])**(1-alpha))
+# Depreciation (delta) and savings are also changed via a function defined below 
 
 GDP_df1 = pd.DataFrame()
 
@@ -103,9 +103,21 @@ for economy in APEC_econcode.values():
 
 GDP_df1 = GDP_df1.set_index('year', drop = True)
 
+##########################################################################################
 # Labour efficiency estimates
 lab_eff = pd.read_csv('./data/labour_efficiency_estimate_to2027.csv')
-lab_eff_periods = 5
+
+# Labour efficiency inputs
+# How many recent periods to look at to get the next rate of labour efficiency out to 2100
+lab_eff_periods = 10
+
+# Bounds for long-term labour efficiency rate
+high_eff = 0.0175
+low_eff = 0.0125
+
+# Rate at which labour efficiency moves lower or higher
+down_eff = 0.0015
+up_eff = 0.0015
 
 GDP_df2 = pd.DataFrame()
 
@@ -118,11 +130,11 @@ for economy in APEC_econcode.values():
 
     # Update labour efficiency
     for year in range(2028, 2101, 1):
-        if eff_df.iloc[-lab_eff_periods:].sum()[0] / lab_eff_periods > 0.0175:
-            eff_df.loc[year, 'percent'] = eff_df.iloc[-lab_eff_periods:].sum()[0] / lab_eff_periods - 0.0015
+        if eff_df.iloc[-lab_eff_periods:].sum()[0] / lab_eff_periods > high_eff:
+            eff_df.loc[year, 'percent'] = eff_df.iloc[-lab_eff_periods:].sum()[0] / lab_eff_periods - down_eff
 
-        elif eff_df.iloc[-lab_eff_periods:].sum()[0] / lab_eff_periods < 0.0125:
-            eff_df.loc[year, 'percent'] = eff_df.iloc[-lab_eff_periods:].sum()[0] / lab_eff_periods + 0.0015
+        elif eff_df.iloc[-lab_eff_periods:].sum()[0] / lab_eff_periods < low_eff:
+            eff_df.loc[year, 'percent'] = eff_df.iloc[-lab_eff_periods:].sum()[0] / lab_eff_periods + up_eff
 
         else: 
             eff_df.loc[year, 'percent'] = lab_eff_improvement
@@ -136,7 +148,97 @@ for economy in APEC_econcode.values():
 
     GDP_df2 = pd.concat([GDP_df2, interim_df1])
 
-# Chart labour efficiency
+# Capital and output
+# Delta assumptions (bounds and adjustment)
+high_delta = 0.046
+low_delta = 0.045
+down_delta = 0.005
+up_delta = 0.005
+
+# Savings assumptions (bounds and adjustment)
+high_sav = 0.30
+low_sav = 0.22
+down_sav = 0.004
+up_sav = 0.002
+
+# Read data
+delta_df = pd.read_csv('./data/PWT_delta_2019.csv')
+delta_df = pd.concat([delta_df, pd.DataFrame({'economy_code': '13_PNG', 'year': 2019}, index = [0])])\
+    .sort_values('economy_code').reset_index(drop = True)
+savings_df = pd.read_csv('./data/IMF_savings_2027.csv')
+
+GDP_df3 = pd.DataFrame()
+
+for economy in APEC_econcode.values():
+    delta = delta_df[delta_df['economy_code'] == economy]['value'].values[0]
+    savings = savings_df[savings_df['economy_code'] == economy]['value'].values[0] / 100
+
+    interim_df1 = GDP_df2[GDP_df2['economy_code'] == economy].copy()
+
+    # Create savings data frame
+    dyn_savings = pd.DataFrame(index = range(2028, 2101, 1), columns = ['savings'])
+    dyn_savings.loc[2028, 'savings'] = savings
+
+    # Create depreciation data frame
+    dyn_delta = pd.DataFrame(index = range(2028, 2101, 1), columns = ['delta'])
+    dyn_delta.loc[2028, 'delta'] = delta
+
+    for year in range(2028, 2101, 1):
+        if dyn_savings.loc[year, 'savings'] > high_sav:
+            dyn_savings.loc[year + 1, 'savings'] = dyn_savings.loc[year, 'savings'] - down_sav
+        
+        elif dyn_savings.loc[year, 'savings'] < low_sav:
+            dyn_savings.loc[year + 1, 'savings'] = dyn_savings.loc[year, 'savings'] + up_sav
+        
+        else:
+            dyn_savings.loc[year + 1, 'savings'] = dyn_savings.loc[year, 'savings']
+
+    for year in range(2028, 2101, 1):
+        if dyn_delta.loc[year, 'delta'] > high_delta:
+            dyn_delta.loc[year + 1, 'delta'] = dyn_delta.loc[year, 'delta'] - down_delta
+        
+        elif dyn_delta.loc[year, 'delta'] < low_delta:
+            dyn_delta.loc[year + 1, 'delta'] = dyn_delta.loc[year, 'delta'] + up_delta
+        
+        else:
+            dyn_delta.loc[year + 1, 'delta'] = dyn_delta.loc[year, 'delta']
+
+        # Capital
+        interim_df1.at[year, 'capital'] = interim_df1.loc[year - 1, 'capital']\
+            - interim_df1.loc[year - 1, 'capital'] * dyn_delta.loc[year, 'delta']\
+                + interim_df1.loc[year - 1, 'real_output'] * dyn_savings.loc[year, 'savings'] 
+        # Output
+        interim_df1.at[year, 'real_output'] = (interim_df1.loc[year, 'capital']) ** ALPHA\
+            * ((interim_df1.loc[year, 'labour'] * interim_df1.loc[year, 'efficiency']) ** (1 - ALPHA))      
+
+    GDP_df3 = pd.concat([GDP_df3, interim_df1]) 
+
+GDP_estimates = GDP_df3.reset_index()
+
+GDP_estimates['real_output_IMF'] = np.where(GDP_estimates['year'] > 2027, np.nan, 
+                                                   np.where(GDP_estimates['year'] <= 2027, 
+                                                            GDP_estimates['real_output'], np.nan))
+
+GDP_estimates['real_output_projection'] = np.where(GDP_estimates['year'] <= 2027, np.nan, 
+                                                   np.where(GDP_estimates['year'] > 2027, 
+                                                            GDP_estimates['real_output'], np.nan))
+
+# Now add GDP estimates from 8th
+
+GDP_estimates = GDP_estimates.merge(GDP_8th, on = ['economy_code', 'year'], how = 'left')\
+    [['year', 'economy_code', 'economy', 'labour', 'efficiency', 'capital', 'real_output_IMF', 'real_output_projection', 'value']]\
+        .rename(columns = {'value': 'real_output_8th'})
+
+GDP_estimates_long = GDP_estimates.melt(id_vars = ['economy_code', 'economy', 'year'])
+
+# Change variable names so they're more descriptive for charts
+GDP_estimates_long['variable'] = GDP_estimates_long['variable'].map({'real_output_IMF': 'IMF GDP projections to 2027',
+                                                                     'real_output_projection': 'APERC real GDP projections',
+                                                                     'real_output_8th': '8th Outlook projections'})
+
+######################################################################################################
+# CHARTS
+# Labour efficiency
 
 # Save location for charts
 lab_eff = './results/labour_efficiency/To2100/'
@@ -170,86 +272,12 @@ for economy in APEC_econcode.values():
         fig.savefig(lab_eff + economy + '_labour_efficiency_to2100.png')
         plt.close()
 
-# Capital and output
-
-delta_df = pd.read_csv('./data/PWT_delta_2019.csv')
-delta_df = pd.concat([delta_df, pd.DataFrame({'economy_code': '13_PNG', 'year': 2019}, index = [0])])\
-    .sort_values('economy_code').reset_index(drop = True)
-savings_df = pd.read_csv('./data/IMF_savings_2027.csv')
-
-GDP_df3 = pd.DataFrame()
-
-for economy in APEC_econcode.values():
-    delta = delta_df[delta_df['economy_code'] == economy]['value'].values[0]
-    savings = savings_df[savings_df['economy_code'] == economy]['value'].values[0] / 100
-
-    interim_df1 = GDP_df2[GDP_df2['economy_code'] == economy].copy()
-
-    # Create savings data frame
-    dyn_savings = pd.DataFrame(index = range(2028, 2101, 1), columns = ['savings'])
-    dyn_savings.loc[2028, 'savings'] = savings
-
-    # Create depreciation data frame
-    dyn_delta = pd.DataFrame(index = range(2028, 2101, 1), columns = ['delta'])
-    dyn_delta.loc[2028, 'delta'] = delta
-
-    for year in range(2028, 2101, 1):
-        if dyn_savings.loc[year, 'savings'] > 0.30:
-            dyn_savings.loc[year + 1, 'savings'] = dyn_savings.loc[year, 'savings'] - 0.005
-        
-        elif dyn_savings.loc[year, 'savings'] < 0.22:
-            dyn_savings.loc[year + 1, 'savings'] = dyn_savings.loc[year, 'savings'] + 0.005
-        
-        else:
-            dyn_savings.loc[year + 1, 'savings'] = dyn_savings.loc[year, 'savings']
-
-    for year in range(2028, 2101, 1):
-        if dyn_delta.loc[year, 'delta'] > 0.046:
-            dyn_delta.loc[year + 1, 'delta'] = dyn_delta.loc[year, 'delta'] - 0.004
-        
-        elif dyn_delta.loc[year, 'delta'] < 0.045:
-            dyn_delta.loc[year + 1, 'delta'] = dyn_delta.loc[year, 'delta'] + 0.002
-        
-        else:
-            dyn_delta.loc[year + 1, 'delta'] = dyn_delta.loc[year, 'delta']
-
-        # Capital
-        interim_df1.at[year, 'capital'] = interim_df1.loc[year - 1, 'capital']\
-            - interim_df1.loc[year - 1, 'capital'] * dyn_delta.loc[year, 'delta']\
-                + interim_df1.loc[year - 1, 'real_output'] * dyn_savings.loc[year, 'savings'] 
-        # Output
-        interim_df1.at[year, 'real_output'] = (interim_df1.loc[year, 'capital']) ** ALPHA\
-            * ((interim_df1.loc[year, 'labour'] * interim_df1.loc[year, 'efficiency']) ** (1 - ALPHA))      
-
-    GDP_df3 = pd.concat([GDP_df3, interim_df1]) 
-
-GDP_estimates = GDP_df3.reset_index()
-
-GDP_estimates['real_output_IMF'] = np.where(GDP_estimates['year'] > 2027, np.nan, 
-                                                   np.where(GDP_estimates['year'] <= 2027, 
-                                                            GDP_estimates['real_output'], np.nan))
-
-GDP_estimates['real_output_projection'] = np.where(GDP_estimates['year'] <= 2027, np.nan, 
-                                                   np.where(GDP_estimates['year'] > 2027, 
-                                                            GDP_estimates['real_output'], np.nan))
-
-# Now add GDP estimates from 8th
-
-GDP_estimates = GDP_estimates.merge(GDP_8th, on = ['economy_code', 'year'], how = 'left')\
-    [['year', 'economy_code', 'economy', 'labour', 'efficiency', 'capital', 'real_output_IMF', 'real_output_projection', 'value']]\
-        .rename(columns = {'value': 'real_output_8th'})
-
-GDP_estimates_long = GDP_estimates.melt(id_vars = ['economy_code', 'economy', 'year'])
-
+# GDP ESTIMATES
 # Save location for charts
 GDP_est = './results/GDP_estimates/'
 
 if not os.path.isdir(GDP_est):
     os.makedirs(GDP_est)
-
-GDP_estimates_long['variable'] = GDP_estimates_long['variable'].map({'real_output_IMF': 'IMF GDP projections to 2027',
-                                                                     'real_output_projection': 'APERC real GDP projections',
-                                                                     'real_output_8th': '8th Outlook projections'})
 
 # GDP charts
 for economy in APEC_econcode.values():
@@ -294,61 +322,3 @@ for economy in APEC_econcode.values():
     plt.tight_layout()
     fig.savefig(GDP_est + economy + '_GDP_estimates.png')
     plt.close()
-
-
-
-
-# # GDP charts
-# for economy in APEC_econcode.values():
-#     chart_df = GDP_estimates[GDP_estimates['economy_code'] == economy]\
-#         .copy().reset_index(drop = True)
-
-#     fig, ax = plt.subplots()
-
-#     sns.set_theme(style = 'ticks')
-
-#     if chart_df['real_output_IMF'].isna().sum() == len(chart_df['real_output_IMF']):
-#         pass
-
-#     else:
-#         # real GDP IMF
-#         sns.lineplot(ax = ax,
-#                     data = chart_df,
-#                     x = 'year',
-#                     y = 'real_output_IMF',
-#                     label = 'Real GDP IMF (2017 USD PPP)',
-#                     palette = palette)
-    
-#     if chart_df['real_output_projection'].isna().sum() == len(chart_df['real_output_projection']):
-#         pass
-    
-#     else:    
-#         # real GDP IMF
-#         sns.lineplot(ax = ax,
-#                     data = chart_df,
-#                     x = 'year',
-#                     y = 'real_output_projection',
-#                     label = 'Real GDP projection (2017 USD PPP)',
-#                     palette = palette)
-    
-#     # 8th Outlook GDP
-#     sns.lineplot(ax = ax,
-#                  data = chart_df,
-#                  x = 'year',
-#                  y = 'real_output_8th',
-#                  label = '8th Outlook real GDP (2018 USD PPP)',
-#                  palette = palette)
-      
-#     ax.set(title = economy + ' real GDP (PPP 2017 USD)', 
-#            xlabel = 'Year', 
-#            ylabel = 'Real output (millions)',
-#            xlim = (1980, 2070))
-    
-#     ax.lines[1].set_linestyle('--')
-    
-#     plt.legend(title = '', 
-#                fontsize = 8)
-    
-#     plt.tight_layout()
-#     fig.savefig(GDP_est + economy + '_GDP_estimates.png')
-#     plt.close()
