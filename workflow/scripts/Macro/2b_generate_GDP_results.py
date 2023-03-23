@@ -38,31 +38,31 @@ aperc_gdp_model(economy = '04_CHL')
 aperc_gdp_model(economy = '05_PRC')
 
 # 06_HKC
-aperc_gdp_model(economy = '06_HKC')
+aperc_gdp_model(economy = '06_HKC', lab_eff_periods = 5, high_eff = 0.02, low_sav = 0.25, low_delta = 0.035)
 
 # 07_INA
-aperc_gdp_model(economy = '07_INA')
+aperc_gdp_model(economy = '07_INA', lab_eff_periods = 5, high_eff = 0.02, low_delta = 0.04)
 
 # 08_JPN
-aperc_gdp_model(economy = '08_JPN')
+aperc_gdp_model(economy = '08_JPN', lab_eff_periods = 5)
 
 # 09_ROK
-aperc_gdp_model(economy = '09_ROK')
+aperc_gdp_model(economy = '09_ROK', lab_eff_periods = 5)
 
 # 10_MAS
-aperc_gdp_model(economy = '10_MAS')
+aperc_gdp_model(economy = '10_MAS', lab_eff_periods = 5, low_sav = 0.27, change_del = 0.01)
 
 # 11_MEX
-aperc_gdp_model(economy = '11_MEX')
+aperc_gdp_model(economy = '11_MEX', lab_eff_periods = 3, low_sav = 0.25)
 
 # 12_NZ
-aperc_gdp_model(economy = '12_NZ')
+aperc_gdp_model(economy = '12_NZ', low_eff = 0.012)
 
 # 13_PNG
-aperc_gdp_model(economy = '13_PNG')
+aperc_gdp_model(economy = '13_PNG', lab_eff_periods = 5)
 
 # 14_PE
-aperc_gdp_model(economy = '14_PE')
+aperc_gdp_model(economy = '14_PE', lab_eff_periods = 5)
 
 # 15_RP
 aperc_gdp_model(economy = '15_RP')
@@ -71,19 +71,19 @@ aperc_gdp_model(economy = '15_RP')
 aperc_gdp_model(economy = '16_RUS')
 
 # 17_SIN
-aperc_gdp_model(economy = '17_SIN')
+aperc_gdp_model(economy = '17_SIN', lab_eff_periods = 5, high_eff = 0.014)
 
 # 18_CT
-aperc_gdp_model(economy = '18_CT')
+aperc_gdp_model(economy = '18_CT', lab_eff_periods = 5, high_eff = 0.014)
 
 # 19_THA
-aperc_gdp_model(economy = '19_THA')
+aperc_gdp_model(economy = '19_THA', lab_eff_periods = 5)
 
 # 20_USA
-aperc_gdp_model(economy = '20_USA')
+aperc_gdp_model(economy = '20_USA', lab_eff_periods = 5)
 
 # 21_VN
-aperc_gdp_model(economy = '21_VN')
+aperc_gdp_model(economy = '21_VN', lab_eff_periods = 5)
 
 # Run all economies with defaults aperc_gdp_model settings 
 # for economy in APEC_econcode.values():

@@ -100,8 +100,6 @@ delta_df = pd.read_csv('./data/PWT_delta_2019.csv')
 
 # Savings
 savings_df = pd.read_csv('./data/IMF_savings_2027.csv')
-savings_df.loc[savings_df['economy_code'] == '13_PNG', 'value'] = 25
-savings_df.loc[savings_df['economy_code'] == '13_PNG', 'source'] = 'Guess'
 
 # Build a funtion for the model: Y[i+1] = K[i+1]**alpha * (L[i+1] * E[i+1])**(1-alpha))
 

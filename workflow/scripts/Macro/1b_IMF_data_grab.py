@@ -210,6 +210,10 @@ brunei_inv = IMF_data_long[(IMF_data_long['variable'] == 'Total investment') &
 IMF_savings = pd.concat([IMF_savings[IMF_savings['economy_code'] != '02_BD'], 
                          brunei_inv]).sort_values(['economy_code']).reset_index(drop = True)
 
+# PNG guess for savings
+IMF_savings.loc[IMF_savings['economy_code'] == '13_PNG', 'value'] = 25
+IMF_savings.loc[IMF_savings['economy_code'] == '13_PNG', 'source'] = 'Guess'
+
 IMF_savings.to_csv('./data/IMF_savings_2027.csv', index = False)
 
 
