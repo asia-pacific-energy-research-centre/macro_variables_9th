@@ -32,6 +32,8 @@ Project organization is based on ideas from [_Good Enough Practices for Scientif
 8. Put final results in the `results` directory.
 9. Name all files to reflect their content or function.
 
+Note: input data for the models is not pushed to git. They are available from public sources (or from internal directories (Teams)) that you will need to save in the relevant location in the data folder on your cloned repository.
+
 ## Using Conda
 
 ### Creating the Conda environment
