@@ -122,8 +122,8 @@ def aperc_gdp_model(economy = '01_AUS',
                     low_sav = 0.22,
                     change_sav = 0.002,
                     high_delta = 0.046,
-                    low_delta = 0.045,
-                    change_del = 0.005,
+                    low_delta = 0.044,
+                    change_del = 0.002,
                     alpha = 0.4):
     """
     This function takes inputs for a Cobb Douglas CES production function and generates a
@@ -136,9 +136,9 @@ def aperc_gdp_model(economy = '01_AUS',
     GDP_8th: GDP from 8th Outlook
     lab_eff_periods: int; default is 10; how many periods to look back in time to then calculate 
     labour efficiency going forward.
-    high_eff: fraction between 0 and 1; default is 0.0175; if labour efficiency is higher than this 
+    high_eff: growth rate; default is 0.0175; if labour efficiency is higher than this 
     bound, decrease it.
-    low_eff: fraction between 0 and 1; default is 0.0125; if labour efficiency is lower than this 
+    low_eff: as above; default is 0.0125; if labour efficiency is lower than this 
     bound, increase it.
     change_eff: fraction; default is 0.0015; how much to increase or decrease labour efficiency 
     if higher or lower than bounds.
