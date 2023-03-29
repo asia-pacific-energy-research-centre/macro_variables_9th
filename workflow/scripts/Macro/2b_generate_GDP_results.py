@@ -26,7 +26,7 @@ APEC_econcode = pd.read_csv('./data/APEC_economy_code.csv', header = None, index
 aperc_gdp_model(economy = '01_AUS')
 
 # 02_BD
-aperc_gdp_model(economy = '02_BD')
+aperc_gdp_model(economy = '02_BD', low_eff = 0.01, change_eff = 0.005, high_sav = 0.25)
 
 # 03_CDA
 aperc_gdp_model(economy = '03_CDA')
@@ -38,7 +38,7 @@ aperc_gdp_model(economy = '04_CHL', lab_eff_periods = 5, low_eff = 0.017, high_e
 aperc_gdp_model(economy = '05_PRC', high_sav = 0.27, change_sav = 0.01)
 
 # 06_HKC
-aperc_gdp_model(economy = '06_HKC', high_eff = 0.02)
+aperc_gdp_model(economy = '06_HKC', high_eff = 0.02, low_sav = 0.25, change_sav = 0.01)
 
 # 07_INA
 aperc_gdp_model(economy = '07_INA', lab_eff_periods = 5, high_eff = 0.03, low_delta = 0.04)
