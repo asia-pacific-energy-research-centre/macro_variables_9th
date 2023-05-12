@@ -95,11 +95,15 @@ GDP_df1 = GDP_df1.set_index('year', drop = True)
 ##########################################################################################
 # READ IN additional data (GDP_df1 and lab_eff obtained from above)
 
-# Depreciation
+# Depreciation for most recent year of data
 delta_df = pd.read_csv('./data/PWT_delta_2019.csv')
 
 # Savings
 savings_df = pd.read_csv('./data/IMF_savings_2027.csv')
+
+# Also grab historical depreciation and savings/investment
+save_invest_hist = pd.read_csv('./data/IMF/IMF_to2027.csv')
+delta_hist = pd.read_csv('./data/PWT/PWT_cap_labour_to2019.csv')
 
 # Build a funtion for the model: Y[i+1] = K[i+1]**alpha * (L[i+1] * E[i+1])**(1-alpha))
 
@@ -196,11 +200,13 @@ def aperc_gdp_model(economy = '01_AUS',
     delta = delta_df[delta_df['economy_code'] == economy]['value'].values[0]
 
     # Create savings data frame
-    dyn_savings = pd.DataFrame(index = range(2028, 2101, 1), columns = ['savings'])
+    dyn_savings = pd.DataFrame(index = range(1980, 2101, 1), columns = ['savings'])
+    dyn_savings.index.name = 'year'
     dyn_savings.loc[2028, 'savings'] = savings
 
     # Create depreciation data frame
-    dyn_delta = pd.DataFrame(index = range(2028, 2101, 1), columns = ['delta'])
+    dyn_delta = pd.DataFrame(index = range(1980, 2101, 1), columns = ['delta'])
+    dyn_delta.index.name = 'year'
     dyn_delta.loc[2028, 'delta'] = delta
 
     for year in range(2028, 2101, 1):
@@ -229,7 +235,35 @@ def aperc_gdp_model(economy = '01_AUS',
                 + GDP_df2.loc[year - 1, 'real_output'] * dyn_savings.loc[year, 'savings'] 
         # Output
         GDP_df2.at[year, 'real_output'] = (GDP_df2.loc[year, 'capital']) ** alpha\
-            * ((GDP_df2.loc[year, 'labour'] * GDP_df2.loc[year, 'efficiency']) ** (1 - alpha))      
+            * ((GDP_df2.loc[year, 'labour'] * GDP_df2.loc[year, 'efficiency']) ** (1 - alpha)) 
+
+    # Grab historical savings
+    for year in range(1980, 2028, 1):
+        if economy in ['02_BD']:
+            dyn_savings.loc[year, 'savings'] = save_invest_hist[(save_invest_hist['variable'] == 'Total investment') &
+                                                                (save_invest_hist['economy_code'] == economy)]\
+                                                                    .set_index('year')\
+                                                                        .loc[year, 'value'] / 100
+
+        elif economy in ['13_PNG']:
+            dyn_savings.loc[year, 'savings'] = savings / 100
+
+        else:
+            dyn_savings.loc[year, 'savings'] = save_invest_hist[(save_invest_hist['variable'] == 'Gross national savings') &
+                                                                (save_invest_hist['economy_code'] == economy)]\
+                                                                    .set_index('year')\
+                                                                        .loc[year, 'value'] / 100
+            
+    for year in range(1980, 2020, 1):
+        dyn_delta.loc[year, 'delta'] = delta_hist[(delta_hist['variable'] == 'delta') &
+                                                  (delta_hist['economy_code'] == economy)]\
+                                                    .set_index('year')\
+                                                    .loc[year, 'value']
+        
+    for year in range(2020, 2028, 1):
+        dyn_delta.loc[year, 'delta'] = delta
+    
+    GDP_df2 = pd.concat([GDP_df2, dyn_savings, dyn_delta], axis = 1)
 
     # Finalise data frame with estimates for GDP
     GDP_estimates = GDP_df2.reset_index()
@@ -244,7 +278,7 @@ def aperc_gdp_model(economy = '01_AUS',
 
     # Now add GDP estimates from 8th
     GDP_estimates = GDP_estimates.merge(GDP_8th, on = ['economy_code', 'year'], how = 'left')\
-        [['year', 'economy_code', 'economy', 'labour', 'efficiency', 'capital', 'real_output_IMF', 'real_output_projection', 'value']]\
+        [['year', 'economy_code', 'economy', 'labour', 'efficiency', 'capital', 'savings', 'delta', 'real_output_IMF', 'real_output_projection', 'value']]\
             .rename(columns = {'value': 'real_output_8th'})
 
     GDP_estimates_long = GDP_estimates.melt(id_vars = ['economy_code', 'economy', 'year'])
@@ -255,7 +289,13 @@ def aperc_gdp_model(economy = '01_AUS',
                                                                          'real_output_8th': '8th Outlook projections',
                                                                          'labour': 'Population',
                                                                          'capital': 'Capital stock',
-                                                                         'efficiency': 'Labour efficiency'})
+                                                                         'efficiency': 'Labour efficiency',
+                                                                         'savings': 'Savings',
+                                                                         'delta': 'Depreciation'})
+
+    # Add in savings, investment
+
+
 
     # Save location for data
     GDP_result = './results/GDP_estimates/data/'
@@ -281,7 +321,7 @@ def aperc_gdp_model(economy = '01_AUS',
 
     sns.set_theme(style = 'ticks')
 
-    # real GDP IMF
+    # real GDP IMF 
     sns.lineplot(ax = ax,
                  data = GDP_df,
                  x = 'year',
@@ -344,3 +384,5 @@ def aperc_gdp_model(economy = '01_AUS',
         fig.savefig(lab_eff_charts + economy + '_labour_efficiency_to2100.png')
         plt.show()
         plt.close()
+
+aperc_gdp_model()
