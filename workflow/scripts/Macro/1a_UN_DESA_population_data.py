@@ -179,3 +179,59 @@ APEC_population['percent'] = APEC_population.groupby(['economy', 'variable'],
 APEC_population['source'] = 'UN DESA'
 
 APEC_population.to_csv('./data/UN_DESA/undesa_pop_to2100.csv', index = False)
+
+# Sensitivity
+pop_low = pd.read_csv(population_charts + 'sensitivity/APEC_pop_low.csv', header = None, index_col = 0)\
+    .squeeze().to_dict()
+
+pop_med = pd.read_csv(population_charts + 'sensitivity/APEC_pop_med.csv', header = None, index_col = 0)\
+    .squeeze().to_dict()
+
+pop_high = pd.read_csv(population_charts + 'sensitivity/APEC_pop_high.csv', header = None, index_col = 0)\
+    .squeeze().to_dict()
+
+
+for sens in [pop_low, pop_med, pop_high]:
+    projected_df = pd.DataFrame(columns = ['Economy', 'Location', 'Variant', 'Time', 'TPopulation1Jan', 'TPopulation1July', 'NetMigrations'])
+    
+    for economy in APEC:
+        temp_df = undesa_apec[(undesa_apec['Location'] == economy) & 
+                            (undesa_apec['Time'] > 2021) & 
+                            (undesa_apec['Variant'] == sens[economy])]\
+                                .copy().reset_index(drop = True)
+        
+        temp_df['Economy'] = APEC_econcode[economy]
+        
+        projected_df = pd.concat([projected_df, temp_df]).reset_index(drop = True)
+
+    APEC_population = pd.concat([projected_df, historical_df]).copy().reset_index(drop = True)
+
+    APEC_population['Economy'] = APEC_population['Location'].map(APEC_econcode)
+
+    APEC_population = APEC_population.sort_values(['Economy', 'Time']).copy().reset_index(drop = True)
+    APEC_population.to_csv(population_charts + 'sensitivity/APEC_population_to_2100_' + list(sens.values())[0] + '.csv', index = False)
+
+    # Save population data
+
+    APEC_population = APEC_population.rename(columns = {'Economy': 'economy_code',
+                                                        'Location': 'economy',
+                                                        'Variant': 'variant',
+                                                        'Time': 'year',
+                                                        'TPopulation1Jan': 'population_1jan',
+                                                        'TPopulation1July': 'population_1jul',
+                                                        'NetMigrations': 'net_migration'})
+
+    APEC_population = APEC_population.melt(id_vars = ['economy', 'economy_code', 'year', 'variant'],
+                                        value_vars = ['population_1jan', 'population_1jul', 'net_migration'])\
+                                            .reset_index(drop = True)
+
+    APEC_population = APEC_population[['economy_code', 'economy', 'year', 'variant', 'variable', 'value']]
+
+    # Now add percent change column
+    APEC_population['percent'] = APEC_population.groupby(['economy', 'variable'], 
+                                                    group_keys = False)\
+                                                        ['value'].apply(pd.Series.pct_change)
+
+    APEC_population['source'] = 'UN DESA'
+
+    APEC_population.to_csv('./data/UN_DESA/undesa_pop_to2100_' + list(sens.values())[0] + '.csv', index = False)

@@ -32,13 +32,13 @@ aperc_gdp_model(economy = '02_BD', low_eff = 0.01, change_eff = 0.005, high_sav 
 aperc_gdp_model(economy = '03_CDA')
 
 # 04_CHL
-aperc_gdp_model(economy = '04_CHL', lab_eff_periods = 5, low_eff = 0.017, high_eff = 0.024, low_sav = 0.25, high_delta = 0.04, low_delta = 0.039)
+aperc_gdp_model(economy = '04_CHL', lab_eff_periods = 5, low_eff = 0.0175, high_eff = 0.025)
 
 # 05_PRC
-aperc_gdp_model(economy = '05_PRC', high_sav = 0.27, change_sav = 0.01)
+aperc_gdp_model(economy = '05_PRC', high_sav = 0.275, change_sav = 0.01)
 
 # 06_HKC
-aperc_gdp_model(economy = '06_HKC', high_eff = 0.02, low_sav = 0.25, change_sav = 0.01)
+aperc_gdp_model(economy = '06_HKC', high_eff = 0.02, low_sav = 0.24, change_sav = 0.01)
 
 # 07_INA
 aperc_gdp_model(economy = '07_INA', lab_eff_periods = 5, high_eff = 0.03, low_delta = 0.04)
@@ -47,19 +47,19 @@ aperc_gdp_model(economy = '07_INA', lab_eff_periods = 5, high_eff = 0.03, low_de
 aperc_gdp_model(economy = '08_JPN', lab_eff_periods = 5)
 
 # 09_ROK
-aperc_gdp_model(economy = '09_ROK', low_eff = 0.011, high_eff = 0.0125, high_sav = 0.25)
+aperc_gdp_model(economy = '09_ROK', low_eff = 0.011, high_eff = 0.0125)
 
 # 10_MAS
-aperc_gdp_model(economy = '10_MAS')
+aperc_gdp_model(economy = '10_MAS', high_eff = 0.025)
 
 # 11_MEX
 aperc_gdp_model(economy = '11_MEX', lab_eff_periods = 3, low_sav = 0.25)
 
 # 12_NZ
-aperc_gdp_model(economy = '12_NZ', low_eff = 0.012)
+aperc_gdp_model(economy = '12_NZ', low_sav = 0.2)
 
 # 13_PNG
-aperc_gdp_model(economy = '13_PNG', lab_eff_periods = 5, low_eff = 0.035, high_eff = 0.04, low_sav = 0.29)
+aperc_gdp_model(economy = '13_PNG', lab_eff_periods = 5, low_eff = 0.035, high_eff = 0.04, low_sav = 0.29, high_sav = 0.3)
 
 # 14_PE
 aperc_gdp_model(economy = '14_PE', lab_eff_periods = 5, low_eff = 0.025, high_eff = 0.0275)
@@ -75,16 +75,16 @@ aperc_gdp_model(economy = '17_SIN', high_eff = 0.009, low_eff = 0.008)
 
 # 18_CT
 aperc_gdp_model(economy = '18_CT', lab_eff_periods = 5, high_eff = 0.011, low_eff = 0.01, 
-                change_eff = 0.005, high_sav = 0.25, change_sav = 0.02)
+                change_eff = 0.005)
 
 # 19_THA
-aperc_gdp_model(economy = '19_THA', lab_eff_periods = 5, high_eff = 0.025)
+aperc_gdp_model(economy = '19_THA', lab_eff_periods = 5, high_eff = 0.03)
 
 # 20_USA
 aperc_gdp_model(economy = '20_USA', lab_eff_periods = 5)
 
 # 21_VN
-aperc_gdp_model(economy = '21_VN', lab_eff_periods = 5)
+aperc_gdp_model(economy = '21_VN', lab_eff_periods = 5, high_eff = 0.025)
 
 # Run all economies with defaults aperc_gdp_model settings 
 # for economy in APEC_econcode.values():
@@ -111,7 +111,7 @@ for economy in APEC_econcode.values():
         pass
 
 # Write combined data frame
-# combined_df.to_csv(GDP_data + 'combined_GDP_estimate.csv', index = False)
+combined_df.to_csv(GDP_data + 'combined_GDP_estimate.csv', index = False)
 
 # Generate some quick GDP per capita charts
 APEC_gdp_pop = combined_df.pivot(columns = 'variable', 
@@ -123,11 +123,19 @@ APEC_gdp_pop['real_GDP'] = np.where(APEC_gdp_pop['year'] <= 2027,
                                     APEC_gdp_pop['IMF GDP projections to 2027'],
                                     APEC_gdp_pop['APERC real GDP projections from 2027'])
 
-APEC_gdp_pop = APEC_gdp_pop[['economy_code', 'economy', 'year', 'real_GDP', 'Population']].copy().rename(columns = {'Population': 'population'})
+APEC_gdp_pop = APEC_gdp_pop[['economy_code', 'economy', 'year', 'real_GDP', 
+                             'Population', 'Labour efficiency', 'Depreciation',
+                             'Savings', 'Capital stock']].copy()\
+                                .rename(columns = {'Population': 'population',
+                                                   'Labour efficiency': 'lab_eff',
+                                                   'Depreciation': 'depreciation',
+                                                   'Savings': 'savings',
+                                                   'Capital stock': 'k_stock'})
+
 APEC_gdp_pop['GDP_per_capita'] = APEC_gdp_pop['real_GDP'] / APEC_gdp_pop['population'] * 1000
 
 APEC_gdp_pop = APEC_gdp_pop.melt(id_vars = ['economy_code', 'economy', 'year']).copy()
-APEC_gdp_pop.to_csv(GDP_data + 'APEC_GDP_population.csv', index = False)
+APEC_gdp_pop.to_csv(GDP_data + 'APEC_GDP_data.csv', index = False)
 
 # Save space for GDP per capita charts
 GDP_pc = './results/GDP_estimates/per_capita/'
@@ -186,3 +194,125 @@ plt.legend(title = '',
 plt.tight_layout()
 fig.savefig(GDP_pc + 'APEC_gdp_pc.png')
 plt.close()
+
+# Create charts for all relevant results people want to see
+GDP_results = './results/GDP_estimates/input_data/'
+
+if not os.path.isdir(GDP_results):
+    os.makedirs(GDP_results)
+
+# Generate a dataframe that is only gdp and population
+for economy in APEC_econcode.values():
+    rGDP_df = APEC_gdp_pop[(APEC_gdp_pop['economy_code'] == economy) &
+                            (APEC_gdp_pop['variable'] == 'real_GDP') &
+                            (APEC_gdp_pop['year'] <= 2070)]\
+                                .copy().reset_index(drop = True)
+    
+    rGDPpc_df = APEC_gdp_pop[(APEC_gdp_pop['economy_code'] == economy) &
+                            (APEC_gdp_pop['variable'] == 'GDP_per_capita')]\
+                                .copy().reset_index(drop = True)
+    
+    leff_df = APEC_gdp_pop[(APEC_gdp_pop['economy_code'] == economy) &
+                            (APEC_gdp_pop['variable'] == 'lab_eff') &
+                            (APEC_gdp_pop['year'] <= 2070)]\
+                                .copy().reset_index(drop = True)
+    
+    dep_df = APEC_gdp_pop[(APEC_gdp_pop['economy_code'] == economy) &
+                            (APEC_gdp_pop['variable'] == 'depreciation') &
+                            (APEC_gdp_pop['year'] <= 2070)]\
+                                .copy().reset_index(drop = True)
+    
+    sav_df = APEC_gdp_pop[(APEC_gdp_pop['economy_code'] == economy) &
+                            (APEC_gdp_pop['variable'] == 'savings') &
+                            (APEC_gdp_pop['year'] <= 2070)]\
+                                .copy().reset_index(drop = True)
+    
+    k_df = APEC_gdp_pop[(APEC_gdp_pop['economy_code'] == economy) &
+                            (APEC_gdp_pop['variable'] == 'k_stock') &
+                            (APEC_gdp_pop['year'] <= 2070)]\
+                                .copy().reset_index(drop = True)
+    
+    pop_df = APEC_gdp_pop[(APEC_gdp_pop['economy_code'] == economy) &
+                            (APEC_gdp_pop['variable'] == 'population') &
+                            (APEC_gdp_pop['year'] <= 2070)]\
+                                .copy().reset_index(drop = True)
+    
+    fig, ax = plt.subplots(2, 3)
+    
+    sns.set_theme(style = 'ticks')
+
+    # GDP
+    sns.lineplot(ax = ax[0, 0],
+                 data = rGDP_df,
+                 x = 'year',
+                 y = 'value')
+    
+    ax[0, 0].set(title = economy + ' real GDP', 
+                xlabel = 'Year', 
+                ylabel = 'GDP (USD 2017 PPP)',
+                xlim = (1980, 2070),
+                ylim = (0))
+    
+    # leff
+    sns.lineplot(ax = ax[0, 1],
+                 data = leff_df,
+                 x = 'year',
+                 y = 'value')
+    
+    ax[0, 1].set(title = economy + ' labour efficiency', 
+                xlabel = 'Year', 
+                ylabel = 'Labour efficiency',
+                xlim = (1980, 2070),
+                ylim = (0, np.nanmax(leff_df['value']) * 1.1))
+    
+    # depreciation
+    sns.lineplot(ax = ax[0, 2],
+                 data = dep_df,
+                 x = 'year',
+                 y = 'value')
+    
+    ax[0, 2].set(title = economy + ' depreciation', 
+                xlabel = 'Year', 
+                ylabel = 'Depreciation',
+                xlim = (1980, 2070),
+                ylim = (0, np.nanmax(dep_df['value']) * 1.1))
+    
+    # savings
+    sns.lineplot(ax = ax[1, 0],
+                 data = sav_df,
+                 x = 'year',
+                 y = 'value')
+    
+    ax[1, 0].set(title = economy + ' savings (% GDP)', 
+                xlabel = 'Year', 
+                ylabel = 'Savings',
+                xlim = (1980, 2070),
+                ylim = (0, np.nanmax(sav_df['value']) * 1.1))
+    
+    # K stock
+    sns.lineplot(ax = ax[1, 1],
+                 data = k_df,
+                 x = 'year',
+                 y = 'value')
+    
+    ax[1, 1].set(title = economy + ' capital stock', 
+                xlabel = 'Year', 
+                ylabel = 'Capital stock',
+                xlim = (1980, 2070),
+                ylim = (0, np.nanmax(k_df['value']) * 1.1))
+    
+    # Population
+    sns.lineplot(ax = ax[1, 2],
+                 data = pop_df,
+                 x = 'year',
+                 y = 'value')
+    
+    ax[1, 2].set(title = economy + ' population', 
+                xlabel = 'Year', 
+                ylabel = 'Population',
+                xlim = (1980, 2070),
+                ylim = (0, np.nanmax(pop_df['value']) * 1.1))
+    
+    plt.tight_layout()
+    fig.savefig(GDP_results + economy + '_gdp_results.png')
+    plt.close()

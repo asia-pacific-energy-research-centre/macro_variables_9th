@@ -122,12 +122,12 @@ def aperc_gdp_model(economy = '01_AUS',
                     high_eff = 0.0175,
                     low_eff = 0.0125,
                     change_eff = 0.0015,
-                    high_sav = 0.30,
+                    high_sav = 0.25,
                     low_sav = 0.22,
                     change_sav = 0.002,
                     high_delta = 0.046,
                     low_delta = 0.044,
-                    change_del = 0.002,
+                    change_del = 0.0005,
                     alpha = 0.4):
     """
     This function takes inputs for a Cobb Douglas CES production function and generates a
@@ -180,7 +180,7 @@ def aperc_gdp_model(economy = '01_AUS',
             eff_df.loc[year, 'percent'] = lab_eff_improvement
 
     # Labour efficiency
-    GDP_df2 = GDP_df1[GDP_df1['economy_code'] == economy].copy()
+    GDP_df2 = input_data[input_data['economy_code'] == economy].copy()
     
     for year in range (2028, 2101, 1):
         GDP_df2.at[year, 'efficiency'] = GDP_df2.loc[year - 1, 'efficiency'] * \
@@ -292,10 +292,6 @@ def aperc_gdp_model(economy = '01_AUS',
                                                                          'efficiency': 'Labour efficiency',
                                                                          'savings': 'Savings',
                                                                          'delta': 'Depreciation'})
-
-    # Add in savings, investment
-
-
 
     # Save location for data
     GDP_result = './results/GDP_estimates/data/'
