@@ -26,65 +26,64 @@ APEC_econcode = pd.read_csv('./data/APEC_economy_code.csv', header = None, index
 aperc_gdp_model(economy = '01_AUS')
 
 # 02_BD
-aperc_gdp_model(economy = '02_BD', low_eff = 0.01, change_eff = 0.005, high_sav = 0.25)
+aperc_gdp_model(economy = '02_BD')
 
 # 03_CDA
 aperc_gdp_model(economy = '03_CDA')
 
 # 04_CHL
-aperc_gdp_model(economy = '04_CHL', lab_eff_periods = 5, low_eff = 0.0175, high_eff = 0.025)
+aperc_gdp_model(economy = '04_CHL')
 
 # 05_PRC
-aperc_gdp_model(economy = '05_PRC', high_sav = 0.275, change_sav = 0.01)
+aperc_gdp_model(economy = '05_PRC', change_sav = 0.01, change_eff = 0.004)
 
 # 06_HKC
-aperc_gdp_model(economy = '06_HKC', high_eff = 0.02, low_sav = 0.24, change_sav = 0.01)
+aperc_gdp_model(economy = '06_HKC', low_sav = 0.24, change_sav = 0.01)
 
 # 07_INA
 aperc_gdp_model(economy = '07_INA', lab_eff_periods = 5, high_eff = 0.03, low_delta = 0.04)
 
 # 08_JPN
-aperc_gdp_model(economy = '08_JPN', lab_eff_periods = 5)
+aperc_gdp_model(economy = '08_JPN')
 
 # 09_ROK
-aperc_gdp_model(economy = '09_ROK', low_eff = 0.011, high_eff = 0.0125)
+aperc_gdp_model(economy = '09_ROK', low_eff = 0.010, high_eff = 0.0125)
 
 # 10_MAS
 aperc_gdp_model(economy = '10_MAS', high_eff = 0.025)
 
 # 11_MEX
-aperc_gdp_model(economy = '11_MEX', lab_eff_periods = 3, low_sav = 0.25)
+aperc_gdp_model(economy = '11_MEX', low_sav = 0.24)
 
 # 12_NZ
-aperc_gdp_model(economy = '12_NZ', low_sav = 0.2)
+aperc_gdp_model(economy = '12_NZ')
 
 # 13_PNG
 aperc_gdp_model(economy = '13_PNG', lab_eff_periods = 5, low_eff = 0.035, high_eff = 0.04, low_sav = 0.29, high_sav = 0.3)
 
 # 14_PE
-aperc_gdp_model(economy = '14_PE', lab_eff_periods = 5, low_eff = 0.025, high_eff = 0.0275)
+aperc_gdp_model(economy = '14_PE')
 
 # 15_RP
-aperc_gdp_model(economy = '15_RP', lab_eff_periods = 5, low_eff = 0.02, high_eff = 0.023)
+aperc_gdp_model(economy = '15_RP')
 
 # 16_RUS
 aperc_gdp_model(economy = '16_RUS')
 
 # 17_SIN
-aperc_gdp_model(economy = '17_SIN', high_eff = 0.009, low_eff = 0.008)
+aperc_gdp_model(economy = '17_SIN', high_eff = 0.01, low_eff = 0.007)
 
 # 18_CT
-aperc_gdp_model(economy = '18_CT', lab_eff_periods = 5, high_eff = 0.011, low_eff = 0.01, 
-                change_eff = 0.005)
+aperc_gdp_model(economy = '18_CT', lab_eff_periods = 5, high_eff = 0.012, low_eff = 0.01)
 
 # 19_THA
-aperc_gdp_model(economy = '19_THA', lab_eff_periods = 5, high_eff = 0.03)
+aperc_gdp_model(economy = '19_THA', high_eff = 0.025)
 
 # 20_USA
-aperc_gdp_model(economy = '20_USA', lab_eff_periods = 5)
+aperc_gdp_model(economy = '20_USA')
 
 # 21_VN
-aperc_gdp_model(economy = '21_VN', lab_eff_periods = 5, high_eff = 0.025)
+aperc_gdp_model(economy = '21_VN', change_sav = 0.01, low_eff = 0.01, change_eff = 0.005)
 
 # Run all economies with defaults aperc_gdp_model settings 
 # for economy in APEC_econcode.values():
@@ -217,6 +216,13 @@ for economy in APEC_econcode.values():
                             (APEC_gdp_pop['year'] <= 2070)]\
                                 .copy().reset_index(drop = True)
     
+    # Grab growth in labour efficiency
+    leff_growth = leff_df.copy()
+    
+    leff_growth['percent'] = leff_growth.groupby(['economy', 'variable'], 
+                                                 group_keys = False)\
+                                                    ['value'].apply(pd.Series.pct_change)
+    
     dep_df = APEC_gdp_pop[(APEC_gdp_pop['economy_code'] == economy) &
                             (APEC_gdp_pop['variable'] == 'depreciation') &
                             (APEC_gdp_pop['year'] <= 2070)]\
@@ -255,15 +261,15 @@ for economy in APEC_econcode.values():
     
     # leff
     sns.lineplot(ax = ax[0, 1],
-                 data = leff_df,
+                 data = leff_growth,
                  x = 'year',
-                 y = 'value')
+                 y = 'percent')
     
     ax[0, 1].set(title = economy + ' labour efficiency', 
                 xlabel = 'Year', 
                 ylabel = 'Labour efficiency',
                 xlim = (1980, 2070),
-                ylim = (0, np.nanmax(leff_df['value']) * 1.1))
+                ylim = (np.nanmin(leff_growth['percent']) * 1.1, np.nanmax(leff_growth['percent']) * 1.1))
     
     # depreciation
     sns.lineplot(ax = ax[0, 2],

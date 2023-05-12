@@ -119,9 +119,9 @@ def aperc_gdp_model(economy = '01_AUS',
                     sav_data = savings_df,
                     GDP_8th = GDP_8th,
                     lab_eff_periods = 10,
-                    high_eff = 0.0175,
-                    low_eff = 0.0125,
-                    change_eff = 0.0015,
+                    high_eff = 0.015,
+                    low_eff = 0.012,
+                    change_eff = 0.002,
                     high_sav = 0.25,
                     low_sav = 0.22,
                     change_sav = 0.002,
@@ -163,7 +163,7 @@ def aperc_gdp_model(economy = '01_AUS',
     """
  
     # Labour efficiency calculation
-    eff_df = lab_eff[lab_eff['economy_code'] == economy][['year', 'percent']]\
+    eff_df = labour_data[labour_data['economy_code'] == economy][['year', 'percent']]\
         .set_index('year', drop = True).iloc[-lab_eff_periods:]
     
     lab_eff_improvement = eff_df['percent'].sum() / lab_eff_periods
@@ -177,14 +177,14 @@ def aperc_gdp_model(economy = '01_AUS',
             eff_df.loc[year, 'percent'] = eff_df.iloc[-lab_eff_periods:].sum()[0] / lab_eff_periods + change_eff
 
         else: 
-            eff_df.loc[year, 'percent'] = lab_eff_improvement
+            eff_df.loc[year, 'percent'] = eff_df.loc[year - 1, 'percent']
 
     # Labour efficiency
     GDP_df2 = input_data[input_data['economy_code'] == economy].copy()
     
     for year in range (2028, 2101, 1):
         GDP_df2.at[year, 'efficiency'] = GDP_df2.loc[year - 1, 'efficiency'] * \
-            (1 + (eff_df.iloc[-lab_eff_periods:].sum()[0] / lab_eff_periods))
+            (1 + (eff_df.loc[year, 'percent']))
 
     # Save labour efficiency dataframe. Location for data:
     lab_eff_loc = './results/labour_efficiency/data/'
@@ -196,8 +196,8 @@ def aperc_gdp_model(economy = '01_AUS',
 
     # Depreciation and savings    
         
-    savings = savings_df[savings_df['economy_code'] == economy]['value'].values[0] / 100
-    delta = delta_df[delta_df['economy_code'] == economy]['value'].values[0]
+    savings = sav_data[sav_data['economy_code'] == economy]['value'].values[0] / 100
+    delta = delta_data[delta_data['economy_code'] == economy]['value'].values[0]
 
     # Create savings data frame
     dyn_savings = pd.DataFrame(index = range(1980, 2101, 1), columns = ['savings'])
@@ -381,4 +381,4 @@ def aperc_gdp_model(economy = '01_AUS',
         plt.show()
         plt.close()
 
-aperc_gdp_model()
+aperc_gdp_model(economy = '01_AUS')
