@@ -207,6 +207,11 @@ for economy in APEC_econcode.values():
                             (APEC_gdp_pop['year'] <= 2070)]\
                                 .copy().reset_index(drop = True)
     
+    rGDP_growth = rGDP_df.copy()
+    rGDP_growth['percent'] = rGDP_growth.groupby(['economy', 'variable'], 
+                                                 group_keys = False)\
+                                                    ['value'].apply(pd.Series.pct_change)
+    
     rGDPpc_df = APEC_gdp_pop[(APEC_gdp_pop['economy_code'] == economy) &
                             (APEC_gdp_pop['variable'] == 'GDP_per_capita')]\
                                 .copy().reset_index(drop = True)
@@ -258,6 +263,12 @@ for economy in APEC_econcode.values():
                 ylabel = 'GDP (USD 2017 PPP)',
                 xlim = (1980, 2070),
                 ylim = (0))
+    
+    # GDP growth
+    sns.barplot(ax = ax[0, 0],
+                data = rGDP_growth,
+                x = 'year',
+                y = 'percent')
     
     # leff
     sns.lineplot(ax = ax[0, 1],
