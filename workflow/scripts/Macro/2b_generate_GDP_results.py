@@ -59,7 +59,7 @@ aperc_gdp_model(economy = '11_MEX', low_sav = 0.24)
 aperc_gdp_model(economy = '12_NZ')
 
 # 13_PNG
-aperc_gdp_model(economy = '13_PNG', lab_eff_periods = 5, low_eff = 0.035, high_eff = 0.04, low_sav = 0.29, high_sav = 0.3)
+aperc_gdp_model(economy = '13_PNG', lab_eff_periods = 5, low_eff = 0.035, high_eff = 0.04, low_sav = 0.29, high_sav = 0.35)
 
 # 14_PE
 aperc_gdp_model(economy = '14_PE')
@@ -194,6 +194,45 @@ plt.tight_layout()
 fig.savefig(GDP_pc + 'APEC_gdp_pc.png')
 plt.close()
 
+# GDP bar chart growth
+GDP_growth_charts = './results/GDP_estimates/growth/'
+
+if not os.path.isdir(GDP_growth_charts):
+    os.makedirs(GDP_growth_charts)
+
+for economy in APEC_econcode.values():
+    rGDP_growth = APEC_gdp_pop[(APEC_gdp_pop['economy_code'] == economy) &
+                            (APEC_gdp_pop['variable'] == 'real_GDP') &
+                            (APEC_gdp_pop['year'] <= 2070)]\
+                                .copy().reset_index(drop = True)
+    
+    rGDP_growth['percent'] = rGDP_growth.groupby(['economy', 'variable'], 
+                                                 group_keys = False)\
+                                                    ['value'].apply(pd.Series.pct_change)
+    
+    fig, ax = plt.subplots()
+    
+    sns.set_theme(style = 'ticks')
+
+    # GDP
+    sns.barplot(ax = ax,
+                data = rGDP_growth,
+                x = 'year',
+                y = 'percent',
+                color = 'blue')
+    
+    ax.set(title = economy + ' real GDP growth',
+           xlabel = 'Year: 1980 to 2070', 
+           ylabel = 'Percent',
+           xticklabels = [])
+    
+    ax.tick_params(bottom = False)
+    
+    plt.tight_layout()
+    fig.savefig(GDP_growth_charts + economy + '_gdp_growth.png')
+    plt.close()
+
+
 # Create charts for all relevant results people want to see
 GDP_results = './results/GDP_estimates/input_data/'
 
@@ -263,12 +302,6 @@ for economy in APEC_econcode.values():
                 ylabel = 'GDP (USD 2017 PPP)',
                 xlim = (1980, 2070),
                 ylim = (0))
-    
-    # GDP growth
-    sns.barplot(ax = ax[0, 0],
-                data = rGDP_growth,
-                x = 'year',
-                y = 'percent')
     
     # leff
     sns.lineplot(ax = ax[0, 1],
