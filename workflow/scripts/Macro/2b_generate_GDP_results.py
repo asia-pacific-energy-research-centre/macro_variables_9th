@@ -8,6 +8,7 @@ import seaborn as sns
 import os
 import re
 import openpyxl
+import datetime
 
 # FOR NOW: Run 2a GDP_model_APERC prior to executing this script
 # Import function from prior script
@@ -20,6 +21,9 @@ os.chdir(re.split(wanted_wd, os.getcwd())[0] + wanted_wd)
 # APEC economy codes
 APEC_econcode = pd.read_csv('./data/APEC_economy_code.csv', header = None, index_col = 0)\
     .squeeze().to_dict()
+
+# Date
+timestamp = datetime.datetime.now().strftime('%Y_%m_%d')
 
 # Generate economy specific results using the aperc_gdp_model function
 # 01_AUS
@@ -110,7 +114,7 @@ for economy in APEC_econcode.values():
         pass
 
 # Write combined data frame
-combined_df.to_csv(GDP_data + 'combined_GDP_estimate.csv', index = False)
+combined_df.to_csv(GDP_data + 'combined_GDP_estimate_' + timestamp + '.csv', index = False)
 
 # Generate some quick GDP per capita charts
 APEC_gdp_pop = combined_df.pivot(columns = 'variable', 
@@ -126,7 +130,7 @@ APEC_gdp_pop = APEC_gdp_pop[['economy_code', 'economy', 'year', 'real_GDP',
                              'Population', 'Labour efficiency', 'Depreciation',
                              'Savings', 'Capital stock']].copy()\
                                 .rename(columns = {'Population': 'population',
-                                                   'Labour efficiency': 'lab_eff',
+                                                   'Labour efficiency': 'lab_efficiency',
                                                    'Depreciation': 'depreciation',
                                                    'Savings': 'savings',
                                                    'Capital stock': 'k_stock'})
@@ -134,7 +138,33 @@ APEC_gdp_pop = APEC_gdp_pop[['economy_code', 'economy', 'year', 'real_GDP',
 APEC_gdp_pop['GDP_per_capita'] = APEC_gdp_pop['real_GDP'] / APEC_gdp_pop['population'] * 1000
 
 APEC_gdp_pop = APEC_gdp_pop.melt(id_vars = ['economy_code', 'economy', 'year']).copy()
-APEC_gdp_pop.to_csv(GDP_data + 'APEC_GDP_data.csv', index = False)
+
+# Define units
+real_GDP = APEC_gdp_pop[APEC_gdp_pop['variable'] == 'real_GDP'].copy().reset_index(drop = True)
+real_GDP['units'] = 'Millions (2017 USD PPP)'
+
+population = APEC_gdp_pop[APEC_gdp_pop['variable'] == 'population'].copy().reset_index(drop = True)
+population['units'] = 'Millions'
+
+lab_eff = APEC_gdp_pop[APEC_gdp_pop['variable'] == 'lab_efficiency'].copy().reset_index(drop = True)
+lab_eff['units'] = 'Derived value (residual to model)'
+
+depreciation = APEC_gdp_pop[APEC_gdp_pop['variable'] == 'depreciation'].copy().reset_index(drop = True)
+depreciation['units'] = 'Proportion'
+
+savings = APEC_gdp_pop[APEC_gdp_pop['variable'] == 'savings'].copy().reset_index(drop = True)
+savings['units'] = 'Proportion'
+
+k_stock = APEC_gdp_pop[APEC_gdp_pop['variable'] == 'k_stock'].copy().reset_index(drop = True)
+k_stock['units'] = 'Millions (2017 USD)'
+
+GDP_pc = APEC_gdp_pop[APEC_gdp_pop['variable'] == 'GDP_per_capita'].copy().reset_index(drop = True)
+GDP_pc['units'] = 'USD PPP 2017'
+
+APEC_gdp_data = pd.concat([real_GDP, population, lab_eff, depreciation, savings, k_stock, GDP_pc]).copy()
+APEC_gdp_data = APEC_gdp_data.sort_values(['economy_code', 'variable', 'year']).copy().reset_index(drop = True)
+
+APEC_gdp_data.to_csv(GDP_data + 'APEC_GDP_data_' + timestamp + '.csv', index = False)
 
 # Save space for GDP per capita charts
 GDP_pc = './results/GDP_estimates/per_capita/'
@@ -256,7 +286,7 @@ for economy in APEC_econcode.values():
                                 .copy().reset_index(drop = True)
     
     leff_df = APEC_gdp_pop[(APEC_gdp_pop['economy_code'] == economy) &
-                            (APEC_gdp_pop['variable'] == 'lab_eff') &
+                            (APEC_gdp_pop['variable'] == 'lab_efficiency') &
                             (APEC_gdp_pop['year'] <= 2070)]\
                                 .copy().reset_index(drop = True)
     
