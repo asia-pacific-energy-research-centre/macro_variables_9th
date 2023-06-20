@@ -92,6 +92,11 @@ for economy in APEC_econcode.values():
 
 GDP_df1 = GDP_df1.set_index('year', drop = True)
 
+# Capital growth grab
+cap_growth_df = cap_df[['economy_code', 'variable', 'year', 'percent']].copy().reset_index(drop = True)
+cap_growth_df
+
+
 ##########################################################################################
 # READ IN additional data (GDP_df1 and lab_eff obtained from above)
 
@@ -128,7 +133,8 @@ def aperc_gdp_model(economy = '01_AUS',
                     high_delta = 0.046,
                     low_delta = 0.044,
                     change_del = 0.0005,
-                    alpha = 0.4):
+                    alpha = 0.4,
+                    cap_compare = 0.05):
     """
     This function takes inputs for a Cobb Douglas CES production function and generates a
     dataset with GDP estimates out to 2100 for APEC economies.
@@ -209,6 +215,8 @@ def aperc_gdp_model(economy = '01_AUS',
     dyn_delta.index.name = 'year'
     dyn_delta.loc[2028, 'delta'] = delta
 
+    cap_growth = cap_growth_df[cap_growth_df['economy_code'] == economy][['year', 'percent']].set_index('year')
+
     for year in range(2028, 2101, 1):
         if dyn_savings.loc[year, 'savings'] > high_sav:
             dyn_savings.loc[year + 1, 'savings'] = dyn_savings.loc[year, 'savings'] - change_sav
@@ -227,12 +235,28 @@ def aperc_gdp_model(economy = '01_AUS',
             dyn_delta.loc[year + 1, 'delta'] = dyn_delta.loc[year, 'delta'] + change_del
         
         else:
-            dyn_delta.loc[year + 1, 'delta'] = dyn_delta.loc[year, 'delta']
+            dyn_delta.loc[year + 1, 'delta'] = dyn_delta.loc[year, 'delta'] 
+        
+        # AMENDMENT: BECAUSE CAPITAL ESTIMATES FROM 2028 DO NOT FOLLOW HISTORICAL TRENDS WELL FOR SOME ECONOMIES
+        # IE THERE"S A SERIES BREAK. NEED TO BUILD AN IF ELSE
 
-        # Capital
-        GDP_df2.at[year, 'capital'] = GDP_df2.loc[year - 1, 'capital']\
-            - GDP_df2.loc[year - 1, 'capital'] * dyn_delta.loc[year, 'delta']\
-                + GDP_df2.loc[year - 1, 'real_output'] * dyn_savings.loc[year, 'savings'] 
+        new_cap_calc = GDP_df2.loc[year - 1, 'capital']\
+            - (GDP_df2.loc[year - 1, 'capital'] * dyn_delta.loc[year, 'delta'])\
+                + (GDP_df2.loc[year - 1, 'real_output'] * dyn_savings.loc[year, 'savings'])
+        
+        cap_prev = GDP_df2.loc[year - 1, 'capital']
+
+        cap_diff = (new_cap_calc / cap_prev) - 1
+
+        if ((cap_diff / cap_growth.loc[year - 1, 'percent']) < (1 - cap_compare)) | ((cap_diff / cap_growth.loc[year - 1, 'percent']) > (1 + cap_compare)):
+            # Capital
+            GDP_df2.at[year, 'capital'] = GDP_df2.loc[year - 1, 'capital'] * (1 + (cap_growth.loc[year - 1, 'percent'] * (1 - cap_compare)))
+            cap_growth.loc[year, 'percent'] = cap_growth.loc[year - 1, 'percent'] * (1 - cap_compare)
+
+        else:
+             GDP_df2.at[year, 'capital'] = new_cap_calc
+             cap_growth.loc[year, 'percent'] = (new_cap_calc / GDP_df2.loc[year - 1, 'capital']) - 1
+
         # Output
         GDP_df2.at[year, 'real_output'] = (GDP_df2.loc[year, 'capital']) ** alpha\
             * ((GDP_df2.loc[year, 'labour'] * GDP_df2.loc[year, 'efficiency']) ** (1 - alpha)) 
@@ -253,7 +277,7 @@ def aperc_gdp_model(economy = '01_AUS',
                                                                 (save_invest_hist['economy_code'] == economy)]\
                                                                     .set_index('year')\
                                                                         .loc[year, 'value'] / 100
-            
+
     for year in range(1980, 2020, 1):
         dyn_delta.loc[year, 'delta'] = delta_hist[(delta_hist['variable'] == 'delta') &
                                                   (delta_hist['economy_code'] == economy)]\
@@ -381,4 +405,4 @@ def aperc_gdp_model(economy = '01_AUS',
         plt.show()
         plt.close()
 
-aperc_gdp_model(economy = '01_AUS')
+aperc_gdp_model()

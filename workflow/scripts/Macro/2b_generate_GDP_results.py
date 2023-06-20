@@ -30,7 +30,7 @@ timestamp = datetime.datetime.now().strftime('%Y_%m_%d')
 aperc_gdp_model(economy = '01_AUS')
 
 # 02_BD
-aperc_gdp_model(economy = '02_BD')
+aperc_gdp_model(economy = '02_BD', cap_compare = 0.2)
 
 # 03_CDA
 aperc_gdp_model(economy = '03_CDA')
@@ -39,31 +39,31 @@ aperc_gdp_model(economy = '03_CDA')
 aperc_gdp_model(economy = '04_CHL')
 
 # 05_PRC
-aperc_gdp_model(economy = '05_PRC', change_sav = 0.01, change_eff = 0.004)
+aperc_gdp_model(economy = '05_PRC', change_sav = 0.02, change_eff = 0.004, cap_compare = 0.1)
 
 # 06_HKC
 aperc_gdp_model(economy = '06_HKC', low_sav = 0.24, change_sav = 0.01)
 
 # 07_INA
-aperc_gdp_model(economy = '07_INA', lab_eff_periods = 5, high_eff = 0.03, low_delta = 0.04)
+aperc_gdp_model(economy = '07_INA', lab_eff_periods = 5, high_eff = 0.03, low_delta = 0.04, cap_compare = 0.04)
 
 # 08_JPN
-aperc_gdp_model(economy = '08_JPN')
+aperc_gdp_model(economy = '08_JPN', cap_compare = 0.0001)
 
 # 09_ROK
 aperc_gdp_model(economy = '09_ROK', low_eff = 0.010, high_eff = 0.0125)
 
 # 10_MAS
-aperc_gdp_model(economy = '10_MAS', high_eff = 0.025)
+aperc_gdp_model(economy = '10_MAS', high_eff = 0.025, cap_compare = 0.1)
 
 # 11_MEX
-aperc_gdp_model(economy = '11_MEX', low_sav = 0.24)
+aperc_gdp_model(economy = '11_MEX', low_sav = 0.24, cap_compare = 0.01)
 
 # 12_NZ
 aperc_gdp_model(economy = '12_NZ')
 
 # 13_PNG
-aperc_gdp_model(economy = '13_PNG', lab_eff_periods = 5, low_eff = 0.035, high_eff = 0.04, low_sav = 0.29, high_sav = 0.35)
+aperc_gdp_model(economy = '13_PNG', lab_eff_periods = 1, low_eff = 0.06, high_eff = 0.08, change_eff = 0.013)
 
 # 14_PE
 aperc_gdp_model(economy = '14_PE')
@@ -72,16 +72,16 @@ aperc_gdp_model(economy = '14_PE')
 aperc_gdp_model(economy = '15_RP')
 
 # 16_RUS
-aperc_gdp_model(economy = '16_RUS')
+aperc_gdp_model(economy = '16_RUS', cap_compare = 0.0)
 
 # 17_SIN
-aperc_gdp_model(economy = '17_SIN', high_eff = 0.01, low_eff = 0.007)
+aperc_gdp_model(economy = '17_SIN')
 
 # 18_CT
-aperc_gdp_model(economy = '18_CT', lab_eff_periods = 5, high_eff = 0.012, low_eff = 0.01)
+aperc_gdp_model(economy = '18_CT')
 
 # 19_THA
-aperc_gdp_model(economy = '19_THA', high_eff = 0.025)
+aperc_gdp_model(economy = '19_THA', cap_compare = 0.0001)
 
 # 20_USA
 aperc_gdp_model(economy = '20_USA')
@@ -144,7 +144,7 @@ real_GDP = APEC_gdp_pop[APEC_gdp_pop['variable'] == 'real_GDP'].copy().reset_ind
 real_GDP['units'] = 'Millions (2017 USD PPP)'
 
 population = APEC_gdp_pop[APEC_gdp_pop['variable'] == 'population'].copy().reset_index(drop = True)
-population['units'] = 'Millions'
+population['units'] = 'Thousands'
 
 lab_eff = APEC_gdp_pop[APEC_gdp_pop['variable'] == 'lab_efficiency'].copy().reset_index(drop = True)
 lab_eff['units'] = 'Derived value (residual to model)'
