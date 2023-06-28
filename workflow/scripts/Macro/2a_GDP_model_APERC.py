@@ -340,6 +340,9 @@ def aperc_gdp_model(economy = '01_AUS',
     fig, ax = plt.subplots()
 
     sns.set_theme(style = 'ticks')
+    custom_palette = {'IMF GDP projections to 2027': sns.color_palette('Paired', 6).as_hex()[0],
+                      'APERC real GDP projections from 2027' : sns.color_palette('Paired', 6).as_hex()[1],
+                      '8th Outlook projections': sns.color_palette('Dark2', 6).as_hex()[1]}
 
     # real GDP IMF 
     sns.lineplot(ax = ax,
@@ -347,19 +350,24 @@ def aperc_gdp_model(economy = '01_AUS',
                  x = 'year',
                  y = 'value',
                  hue = 'variable',
-                 palette = sns.color_palette('Paired', 2))
+                 palette = custom_palette)
     
     # real GDP IMF
     sns.lineplot(ax = ax,
                  data = GDP_8th,
                  x = 'year',
                  y = 'value',
-                 hue = 'variable')
+                 hue = 'variable',
+                 palette = custom_palette)
     
     ax.lines[1].set_linestyle('--')
     
-    plt.legend(title = '', 
-               fontsize = 8)
+    leg = ax.legend(title = '', 
+                    fontsize = 8)
+    
+    leg_lines = leg.get_lines()
+
+    leg_lines[1].set_linestyle('--')
     
     ax.set(title = economy + ' real GDP (2017 USD PPP)', 
            xlabel = 'Year', 
