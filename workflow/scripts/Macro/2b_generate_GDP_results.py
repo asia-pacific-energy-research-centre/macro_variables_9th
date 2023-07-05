@@ -81,7 +81,7 @@ aperc_gdp_model(economy = '17_SIN')
 aperc_gdp_model(economy = '18_CT')
 
 # 19_THA
-aperc_gdp_model(economy = '19_THA', cap_compare = 0.0001)
+aperc_gdp_model(economy = '19_THA', low_eff = 0.016, high_eff = 0.02, high_sav = 0.34, cap_compare = 0.001)
 
 # 20_USA
 aperc_gdp_model(economy = '20_USA')

@@ -97,7 +97,7 @@ for input in ['GDP_low', 'GDP_med', 'GDP_high']:
     aperc_gdp_model(economy = '01_AUS', input_data = input_GDP[input])
 
     # 02_BD
-    aperc_gdp_model(economy = '02_BD', input_data = input_GDP[input])
+    aperc_gdp_model(economy = '02_BD', cap_compare = 0.2, input_data = input_GDP[input])
 
     # 03_CDA
     aperc_gdp_model(economy = '03_CDA', input_data = input_GDP[input])
@@ -106,31 +106,31 @@ for input in ['GDP_low', 'GDP_med', 'GDP_high']:
     aperc_gdp_model(economy = '04_CHL', input_data = input_GDP[input])
 
     # 05_PRC
-    aperc_gdp_model(economy = '05_PRC', change_sav = 0.01, change_eff = 0.004, input_data = input_GDP[input])
+    aperc_gdp_model(economy = '05_PRC', change_sav = 0.02, change_eff = 0.004, cap_compare = 0.1, input_data = input_GDP[input])
 
     # 06_HKC
     aperc_gdp_model(economy = '06_HKC', low_sav = 0.24, change_sav = 0.01, input_data = input_GDP[input])
 
     # 07_INA
-    aperc_gdp_model(economy = '07_INA', lab_eff_periods = 5, high_eff = 0.03, low_delta = 0.04, input_data = input_GDP[input])
+    aperc_gdp_model(economy = '07_INA', lab_eff_periods = 5, high_eff = 0.03, low_delta = 0.04, cap_compare = 0.04, input_data = input_GDP[input])
 
     # 08_JPN
-    aperc_gdp_model(economy = '08_JPN', input_data = input_GDP[input])
+    aperc_gdp_model(economy = '08_JPN', cap_compare = 0.0001, input_data = input_GDP[input])
 
     # 09_ROK
     aperc_gdp_model(economy = '09_ROK', low_eff = 0.010, high_eff = 0.0125, input_data = input_GDP[input])
 
     # 10_MAS
-    aperc_gdp_model(economy = '10_MAS', high_eff = 0.025, input_data = input_GDP[input])
+    aperc_gdp_model(economy = '10_MAS', high_eff = 0.025, cap_compare = 0.1, input_data = input_GDP[input])
 
     # 11_MEX
-    aperc_gdp_model(economy = '11_MEX', low_sav = 0.24, input_data = input_GDP[input])
+    aperc_gdp_model(economy = '11_MEX', low_sav = 0.24, cap_compare = 0.01, input_data = input_GDP[input])
 
     # 12_NZ
     aperc_gdp_model(economy = '12_NZ', input_data = input_GDP[input])
 
     # 13_PNG
-    aperc_gdp_model(economy = '13_PNG', lab_eff_periods = 5, low_eff = 0.035, high_eff = 0.04, low_sav = 0.29, high_sav = 0.35, input_data = input_GDP[input])
+    aperc_gdp_model(economy = '13_PNG', lab_eff_periods = 1, low_eff = 0.06, high_eff = 0.08, change_eff = 0.013, input_data = input_GDP[input])
 
     # 14_PE
     aperc_gdp_model(economy = '14_PE', input_data = input_GDP[input])
@@ -139,16 +139,16 @@ for input in ['GDP_low', 'GDP_med', 'GDP_high']:
     aperc_gdp_model(economy = '15_RP', input_data = input_GDP[input])
 
     # 16_RUS
-    aperc_gdp_model(economy = '16_RUS', input_data = input_GDP[input])
+    aperc_gdp_model(economy = '16_RUS', cap_compare = 0.0, input_data = input_GDP[input])
 
     # 17_SIN
-    aperc_gdp_model(economy = '17_SIN', high_eff = 0.01, low_eff = 0.007, input_data = input_GDP[input])
+    aperc_gdp_model(economy = '17_SIN', input_data = input_GDP[input])
 
     # 18_CT
-    aperc_gdp_model(economy = '18_CT', lab_eff_periods = 5, high_eff = 0.012, low_eff = 0.01, input_data = input_GDP[input])
+    aperc_gdp_model(economy = '18_CT', input_data = input_GDP[input])
 
     # 19_THA
-    aperc_gdp_model(economy = '19_THA', high_eff = 0.025, input_data = input_GDP[input])
+    aperc_gdp_model(economy = '19_THA', low_eff = 0.016, high_eff = 0.02, high_sav = 0.34, cap_compare = 0.001, input_data = input_GDP[input])
 
     # 20_USA
     aperc_gdp_model(economy = '20_USA', input_data = input_GDP[input])
