@@ -85,6 +85,10 @@ for key, val in pop_dict.items():
 # Change directory to save these sensitivty results into
 # Change the working drive
 wanted_wd = '\\results\sensitivity'
+
+if not os.path.isdir(os.getcwd() + wanted_wd):
+    os.makedirs(os.getcwd() + wanted_wd)
+
 os.chdir(re.split(wanted_wd, os.getcwd())[0] + wanted_wd)
 
 # Now run the function with new input data
@@ -92,6 +96,11 @@ os.chdir(re.split(wanted_wd, os.getcwd())[0] + wanted_wd)
 up_one_level = 'sensitivity'
 
 for input in ['GDP_low', 'GDP_med', 'GDP_high']:
+    wanted_wd = re.split(up_one_level, os.getcwd())[0] + up_one_level + '\\' + input
+
+    if not os.path.isdir(wanted_wd):
+        os.makedirs(wanted_wd)
+
     os.chdir(re.split(up_one_level, os.getcwd())[0] + up_one_level + '\\' + input)
     # 01_AUS
     aperc_gdp_model(economy = '01_AUS', input_data = input_GDP[input])

@@ -126,7 +126,7 @@ for economy in APEC:
 
 # Save required dataframe
 
-pop_choice = pd.read_csv(population_charts + 'APEC_population.csv', header = None, index_col = 0)\
+pop_choice = pd.read_csv('./data/APEC_population.csv', header = None, index_col = 0)\
     .squeeze().to_dict()
 
 APEC_econcode = pd.read_csv('./data/APEC_economy_code.csv', header = None, index_col = 0)\
@@ -179,6 +179,12 @@ APEC_population['percent'] = APEC_population.groupby(['economy', 'variable'],
 APEC_population['source'] = 'UN DESA'
 
 APEC_population.to_csv('./data/UN_DESA/undesa_pop_to2100.csv', index = False)
+
+# Save location for charts
+sensitivity_loc = './results/population/sensitivity/'
+
+if not os.path.isdir(sensitivity_loc):
+    os.makedirs(sensitivity_loc)
 
 # Sensitivity
 pop_low = pd.read_csv(population_charts + 'sensitivity/APEC_pop_low.csv', header = None, index_col = 0)\
