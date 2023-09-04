@@ -152,6 +152,36 @@ APEC_population = pd.concat([projected_df, historical_df]).copy().reset_index(dr
 
 APEC_population['Economy'] = APEC_population['Location'].map(APEC_econcode)
 
+#################################################################################################
+# Australia edit: load intergenerational report
+aus_igr_df = pd.read_excel('./data/AUS_IGR/IGR_02_Population.xlsx', sheet_name = '2.2')
+aus_igr_df['year'] = aus_igr_df['Year'].str[:4]
+
+aus_igr_df['IGR2023'] = np.nan
+
+for i in aus_igr_df.index[1:]:
+    aus_igr_df.loc[i, 'IGR2023'] = (aus_igr_df.loc[i, 'IGR 2023'] + aus_igr_df.loc[i - 1, 'IGR 2023']) / 2 * 1000
+
+# Australia subset
+AUS_pop_df = APEC_population[APEC_population['Location'] == 'Australia'].copy()
+everything_else_df = APEC_population[~(APEC_population['Location'] == 'Australia')].copy()
+
+AUS_pop_df['TPopulation1Jan_adjust'] = AUS_pop_df['TPopulation1Jan']
+
+additional_growth = 0.0015
+
+for year in range(2023, 2102, 1):
+    AUS_pop_df.loc[AUS_pop_df['Time'] == year, 'TPopulation1Jan_adjust'] = \
+        AUS_pop_df.loc[AUS_pop_df['Time'] == year, 'TPopulation1Jan'] * (1 + additional_growth) ** (year - 2023)
+
+AUS_pop_df['TPopulation1Jan'] = AUS_pop_df['TPopulation1Jan_adjust'] 
+AUS_pop_df = AUS_pop_df.drop(columns = ['TPopulation1Jan_adjust']).copy()
+
+AUS_pop_df['Variant'] = 'IGR_2023'
+
+APEC_population = pd.concat([AUS_pop_df, everything_else_df]).copy().reset_index(drop = True)
+###################################################################################################
+
 APEC_population = APEC_population.sort_values(['Economy', 'Time']).copy().reset_index(drop = True)
 APEC_population.to_csv(population_charts + 'APEC_population_to_2100.csv', index = False)
 
