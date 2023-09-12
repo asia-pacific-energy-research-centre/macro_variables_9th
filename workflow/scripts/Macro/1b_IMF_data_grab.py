@@ -12,7 +12,7 @@ import openpyxl
 wanted_wd = 'macro_variables_9th'
 os.chdir(re.split(wanted_wd, os.getcwd())[0] + wanted_wd)
 
-# APEC in IMF daa
+# APEC in IMF data
 
 APEC = ['Australia',
         'Brunei Darussalam',
