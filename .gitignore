@@ -6,7 +6,7 @@
 # Custom files
 *.xlsx
 *.csv
-*.png
+# *.png
 .DS*
 .vscode/settings.json
 env/
