@@ -10,13 +10,22 @@ import re
 import openpyxl
 import datetime
 
-# FOR NOW: Run 2a GDP_model_APERC prior to executing this script
-# Import function from prior script
-# from GDP_model_APERC import aperc_gdp_model
-
 # Change the working drive
 wanted_wd = 'macro_variables_9th'
 os.chdir(re.split(wanted_wd, os.getcwd())[0] + wanted_wd)
+
+# Import function from prior script
+from b1_GDP_model_APERC import aperc_gdp_model
+
+# Read in required data frames (csvs saved in b1_GDP_model_APERC.py)
+GDP_df1 = pd.read_csv('./data/gdp_df1.csv').set_index('year')
+GDP_8th = pd.read_csv('./data/GDP_8th.csv')
+lab_eff = pd.read_csv('./data/labour_efficiency_estimate_to2027.csv')
+cap_growth_df = pd.read_csv('./data/cap_growth_df.csv')
+delta_df = pd.read_csv('./data/PWT_delta_2019.csv')
+savings_df = pd.read_csv('./data/IMF_savings_2027.csv')
+save_invest_hist = pd.read_csv('./data/IMF/IMF_to2027.csv')
+delta_hist = pd.read_csv('./data/PWT/PWT_cap_labour_to2019.csv')
 
 # APEC economy codes
 APEC_econcode = pd.read_csv('./data/APEC_economy_code.csv', header = None, index_col = 0)\
@@ -87,7 +96,7 @@ aperc_gdp_model(economy = '19_THA', low_eff = 0.016, high_eff = 0.02, high_sav =
 aperc_gdp_model(economy = '20_USA')
 
 # 21_VN
-aperc_gdp_model(economy = '21_VN', change_sav = 0.01, low_eff = 0.01, change_eff = 0.005)
+aperc_gdp_model(economy = '21_VN', change_sav = 0.005, low_eff = 0.015, change_eff = 0.002, high_delta = 0.05)
 
 # Run all economies with defaults aperc_gdp_model settings 
 # for economy in APEC_econcode.values():
@@ -164,7 +173,7 @@ GDP_pc['units'] = 'USD PPP 2017'
 APEC_gdp_data = pd.concat([real_GDP, population, lab_eff, depreciation, savings, k_stock, GDP_pc]).copy()
 APEC_gdp_data = APEC_gdp_data.sort_values(['economy_code', 'variable', 'year']).copy().reset_index(drop = True)
 
-APEC_gdp_data.to_csv(GDP_data + 'APEC_GDP_data_' + timestamp + '.csv', index = False)
+APEC_gdp_data.to_csv(GDP_data + '00_APEC_GDP_data_' + timestamp + '.csv', index = False)
 
 # Save space for GDP per capita charts
 GDP_pc = './results/GDP_estimates/per_capita/'

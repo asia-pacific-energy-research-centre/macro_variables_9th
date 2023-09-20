@@ -52,6 +52,7 @@ GDP_8th = GDP_8th.melt(id_vars = ['Economy', 'Unit'])\
 GDP_8th['value'] = GDP_8th['value'] / (10**6)
 # Provide source data
 GDP_8th['source'] = '8th Outlook'
+GDP_8th.to_csv('./data/GDP_8th.csv', index = False)
 
 GDP_df1 = pd.DataFrame()
 
@@ -91,11 +92,11 @@ for economy in APEC_econcode.values():
     GDP_df1 = pd.concat([GDP_df1, interim_df3]).reset_index(drop = True)
 
 GDP_df1 = GDP_df1.set_index('year', drop = True)
+GDP_df1.to_csv('./data/gdp_df1.csv', index = True)
 
 # Capital growth grab
 cap_growth_df = cap_df[['economy_code', 'variable', 'year', 'percent']].copy().reset_index(drop = True)
-cap_growth_df
-
+cap_growth_df.to_csv('./data/cap_growth_df.csv', index = False)
 
 ##########################################################################################
 # READ IN additional data (GDP_df1 and lab_eff obtained from above)
@@ -412,5 +413,3 @@ def aperc_gdp_model(economy = '01_AUS',
         fig.savefig(lab_eff_charts + economy + '_labour_efficiency_to2100.png')
         plt.show()
         plt.close()
-
-aperc_gdp_model()
