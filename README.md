@@ -33,11 +33,11 @@ Builds a function that allows choice of how labour efficiency, savings, and depr
 
 - b2_generate_GDP_results.py
 
-Executes function built in the previous script for all 21 economies and visualises the results.
+Executes function built in the previous script for all 21 economies, with ability to make choices about how the inputs change through time, and visualises the results.
 
 - b3_GDP_population_sensitivity.py
 
-Executes the functions with the same selections in 2b, but with a population sensitivity of Low, Medium and High (UN DESA).
+Executes the functions with the same selections in 2b, but with a population sensitivity of Low, Medium and High (UN DESA has more than 10 different population scenarios, but High, Medium, and Low are chosen as representative of most of the range).
 
 - z_GDP_model_Pugh.py: A different approach from David Pugh for reference
 
