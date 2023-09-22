@@ -14,7 +14,7 @@ Inputs to the model include:
 - Capital stock (Penn World Tables)
 - Depreciation (Penn World Tables)
 - National savings rate (IMF)
-- Labour efficiency (derived for historical years or where data is available)
+- Labour efficiency (derived for historical years or for where data is available, such as to 2027, from IMF projections)
 
 Capital stock, depreciation, national savings, and labour efficiency are assumed to change through the projection period, based on qualitative assessment.
 
