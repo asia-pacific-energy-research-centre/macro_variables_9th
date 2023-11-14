@@ -330,10 +330,11 @@ def aperc_gdp_model(economy = '01_AUS',
     GDP_charts = './results/GDP_estimates/'
 
     # Chart the results
-    GDP_df = GDP_estimates_long[(GDP_estimates_long['variable']\
-                                   .isin(['IMF GDP projections to 2027',
-                                          'APERC real GDP projections from 2027']))]\
-                                    .copy().reset_index(drop = True)
+    GDP_df = GDP_estimates_long[GDP_estimates_long['year'] <= 2070].copy().reset_index(drop = True)
+    GDP_df = GDP_df[(GDP_df['variable']\
+                     .isin(['IMF GDP projections to 2027',
+                            'APERC real GDP projections from 2027']))]\
+                                .copy().reset_index(drop = True)
     
     GDP_8th = GDP_estimates_long[(GDP_estimates_long['variable'].isin(['8th Outlook projections']))]\
                                         .copy().reset_index(drop = True)
@@ -353,7 +354,7 @@ def aperc_gdp_model(economy = '01_AUS',
                  hue = 'variable',
                  palette = custom_palette)
     
-    # real GDP IMF
+    # real GDP 8th
     sns.lineplot(ax = ax,
                  data = GDP_8th,
                  x = 'year',
