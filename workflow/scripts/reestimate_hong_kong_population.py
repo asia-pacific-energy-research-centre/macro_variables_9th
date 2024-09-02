@@ -130,10 +130,111 @@ fig.update_traces(line=dict(width=4))
 fig.write_html('plotting_output/hkc_population_growth_projection.html')
 #%%
 #calcualte the average growht rate and project missing years
-
+#drop nas
+pop_growth = pop_growth.dropna()
 #save the output to data\hkc_population_output.xlsx
+pop_growth.to_csv('results/population/09022024_HKC_pop_projection.csv')
+#%%
+
+
+#################################################################
+
+
+#and also inset it into our macro variables excel file.
+#load it in here: C:\Users\finbar.maunsell\github\macro_variables_9th\results\GDP_estimates\data\00_APEC_GDP_data_2024_07_26.csv
+macro = pd.read_csv('results/GDP_estimates/data/00_APEC_GDP_data_2024_07_26.csv')
+#cols: economy_code	economy	year	variable	value	units
+#filter for:
+# economy_code	economy		variable
+# 06_HKC	Hong Kong, China		GDP_per_capita
+# 06_HKC	Hong Kong, China		population
+
+macro_hkc = macro[macro['economy_code']=='06_HKC']
+macro_hkc_pop = macro_hkc[macro_hkc['variable']=='population'].copy()
+
+#merge in the new data.note that we chose to use: 
+# Method	Measure
+# Final 5 years avg growth (2nd order)	Population
+pop_new = pop_growth[(pop_growth['Method']=='Final 5 years avg growth (2nd order)') & (pop_growth['Measure']=='Population')][['Year', 'Value']]
+pop_new.columns = ['year', 'value']
+macro_hkc_pop = macro_hkc_pop.merge(pop_new, how='left', left_on='year', right_on='year', suffixes=('', '_new'))
+#quickly plotto check the vlaus are simialr
+macro_hkc_pop_melt = pd.melt(macro_hkc_pop, id_vars='year', value_vars=['value', 'value_new'], var_name='Method', value_name='Population')
+#%%
+fig = px.line(macro_hkc_pop_melt, x='year', y='Population', color='Method', title='Hong Kong Population Growth Projection')
+fig.write_html('plotting_output/hkc_population_growth_projection_vs_macro.html')
+
+#%%
+#replace the value with the new value
+macro_hkc_pop['value'] = macro_hkc_pop['value_new'].fillna(macro_hkc_pop['value'])
+#%%
+# Cool now lets recalculate the gdp per capita:
+# GDP per capita = GDP / population
+macro_hkc_gdp_per_cap = macro_hkc[macro_hkc['variable'].isin(['real_GDP', 'population', 'GDP_per_capita'])][['year', 'economy', 'variable', 'value']].copy()
+macro_hkc_gdp_per_cap = macro_hkc_gdp_per_cap.pivot(index=['year', 'economy'], columns='variable', values='value').reset_index()
+#test calcualting it
+macro_hkc_gdp_per_cap['GDP_per_capita_new'] = (macro_hkc_gdp_per_cap['real_GDP']*1000) / macro_hkc_gdp_per_cap['population']
+#calc diff
+macro_hkc_gdp_per_cap['diff'] = macro_hkc_gdp_per_cap['GDP_per_capita_new'] - macro_hkc_gdp_per_cap['GDP_per_capita']
+#ok so its got to have gdp times 1000.
+#%%
+macro_hkc_gdp = macro_hkc[macro_hkc['variable'].isin(['real_GDP'])][['year', 'value']].copy()
+#rename the value column
+macro_hkc_gdp.columns = ['year', 'real_GDP']
+#join in the new population
+macro_hkc_gdp = macro_hkc_gdp.merge(macro_hkc_pop[['year', 'value']], how='left', left_on='year', right_on='year')
+#rename value to population
+macro_hkc_gdp.columns = ['year', 'real_GDP', 'population']
+
+#%%
+#calc the new gdp per capita
+macro_hkc_gdp['GDP_per_capita'] = (macro_hkc_gdp['real_GDP']*1000) / macro_hkc_gdp['population']
+#%%
+#plot against the old value
+macro_hkc_gdp_per_cap_new = macro_hkc_gdp_per_cap[['year', 'economy', 'GDP_per_capita']].copy()
+macro_hkc_gdp_per_cap_new = macro_hkc_gdp_per_cap_new.merge(macro_hkc_gdp[['year', 'GDP_per_capita']], how='left', left_on='year', right_on='year', suffixes=('', '_new'))
+macro_hkc_gdp_per_cap_new = macro_hkc_gdp_per_cap_new[['year', 'economy', 'GDP_per_capita', 'GDP_per_capita_new']]#, 'real_GDP', 'population'
+#plot 
+macro_hkc_gdp_per_cap_melt = pd.melt(macro_hkc_gdp_per_cap_new, id_vars=['year', 'economy'], var_name='Method', value_name='value')
+
+#%%
+fig = px.line(macro_hkc_gdp_per_cap_melt, x='year', y='value', color='Method', title='Hong Kong GDP per Capita Projection')
+fig.write_html('plotting_output/hkc_gdp_per_capita_projection_vs_macro.html')
+
+#%%
+#ok now we can replace the old values with the new values
+macro_hkc_gdp_per_cap['GDP_per_capita'] = macro_hkc_gdp_per_cap['GDP_per_capita_new'].fillna(macro_hkc_gdp_per_cap['GDP_per_capita'])
+#%%
+#now join otgether our new popualtion and gdp per capita
+macro_hkc_pop = macro_hkc_pop[['year', 'value']].copy()
+macro_hkc_pop.columns = ['year', 'value']
+macro_hkc_pop['variable'] = 'population'
+macro_hkc_pop['units'] = 'thousands'
+macro_hkc_pop['economy'] = 'Hong Kong, China'
+macro_hkc_pop['economy_code'] = '06_HKC'
+
+macro_hkc_gdp_per_cap = macro_hkc_gdp_per_cap[['year', 'GDP_per_capita']].copy()
+macro_hkc_gdp_per_cap.columns = ['year', 'value']
+macro_hkc_gdp_per_cap['variable'] = 'GDP_per_capita'
+macro_hkc_gdp_per_cap['units'] = 'USD PPP 2017'
+macro_hkc_gdp_per_cap['economy'] = 'Hong Kong, China'
+macro_hkc_gdp_per_cap['economy_code'] = '06_HKC'
+
+#concatenate
+macro_hkc_new = pd.concat([macro_hkc[~macro_hkc['variable'].isin(['population', 'GDP_per_capita'])], macro_hkc_pop, macro_hkc_gdp_per_cap], axis=0)
+
+#drop hkc from original
+macro = macro[macro['economy_code']!='06_HKC']
+#concatenate
+macro = pd.concat([macro, macro_hkc_new], axis=0)
+#save with new date
+import datetime as dt
+new_date = dt.datetime.now().strftime('%Y_%m_%d')
+macro.to_csv(f'results/GDP_estimates/data/00_APEC_GDP_data_{new_date}.csv', index=False)
 
 
 
+#
 
 
+# %%
