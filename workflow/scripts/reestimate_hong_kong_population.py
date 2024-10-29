@@ -14,7 +14,7 @@ os.chdir(root_dir)
 
 #%%
 #take in population from data\hkc_population_input.csv
-pop = pd.read_csv('data/hkc_population_input.csv')#Year	Population (thousands)
+pop = pd.read_csv('data/hkc_population_input.csv')#Year	Population (thousands) > this data is based on https://www.censtatd.gov.hk/en/web_table.html?id=150-11001#
 
 #make a df with years from 2021 to 2100
 years = pd.DataFrame({'Year':np.arange(2021,2101)})
