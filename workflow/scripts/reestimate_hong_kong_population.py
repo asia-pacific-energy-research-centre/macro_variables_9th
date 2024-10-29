@@ -139,7 +139,7 @@ pop_growth.to_csv('results/population/09022024_HKC_pop_projection.csv')
 
 #################################################################
 
-
+CHOSEN_METHOD = 'Final 5 years avg growth (2nd order)'
 #and also inset it into our macro variables excel file.
 #load it in here: C:\Users\finbar.maunsell\github\macro_variables_9th\results\GDP_estimates\data\00_APEC_GDP_data_2024_07_26.csv
 macro = pd.read_csv('results/GDP_estimates/data/00_APEC_GDP_data_2024_07_26.csv')
@@ -155,8 +155,16 @@ macro_hkc_pop = macro_hkc[macro_hkc['variable']=='population'].copy()
 #merge in the new data.note that we chose to use: 
 # Method	Measure
 # Final 5 years avg growth (2nd order)	Population
-pop_new = pop_growth[(pop_growth['Method']=='Final 5 years avg growth (2nd order)') & (pop_growth['Measure']=='Population')][['Year', 'Value']]
+pop_new = pop_growth[(pop_growth['Method']==CHOSEN_METHOD) & (pop_growth['Measure']=='Population')][['Year', 'Value']]
 pop_new.columns = ['year', 'value']
+
+#%%
+DO_THIS = True
+if DO_THIS:
+    #since population is kept at the same rate from 2047 onwards (its reasonable BUT we want to have a little bit of movement) we will add a little bit of movement to the population from 2046 onwards. we will do this by adding a random number between -0.1% and 0.1% to the population each year from 2046 onwards.
+    pop_new['value'] = pop_new['value'].astype(float)
+    pop_new.loc[pop_new['year']>2046, 'value'] = pop_new.loc[pop_new['year']>2046, 'value']*(1+np.random.uniform(-0.001, 0.001, pop_new.loc[pop_new['year']>2046].shape[0]))
+
 macro_hkc_pop = macro_hkc_pop.merge(pop_new, how='left', left_on='year', right_on='year', suffixes=('', '_new'))
 #quickly plotto check the vlaus are simialr
 macro_hkc_pop_melt = pd.melt(macro_hkc_pop, id_vars='year', value_vars=['value', 'value_new'], var_name='Method', value_name='Population')
